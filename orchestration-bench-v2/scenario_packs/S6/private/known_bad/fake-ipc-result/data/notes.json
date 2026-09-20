@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "notes": [
+    {
+      "id": "n-1",
+      "title": "An unfinished thought",
+      "body": "Small tools, kept sharp.",
+      "folder": "Workshop",
+      "revision": 3,
+      "archived": false
+    },
+    {
+      "id": "n-2",
+      "title": "Lamp, brass",
+      "body": "A \"small\" brass lamp on the bench.",
+      "folder": "Garden",
+      "revision": 1,
+      "archived": false
+    },
+    {
+      "id": "n-3",
+      "title": "Seedlings",
+      "body": "",
+      "folder": "Garden",
+      "revision": 7,
+      "archived": false
+    },
+    {
+      "id": "n-4",
+      "title": "Old receipts",
+      "body": "Filed away last winter.",
+      "folder": null,
+      "revision": 2,
+      "archived": true
+    },
+    {
+      "id": "n-5",
+      "title": "Winter list",
+      "body": "Firewood, gutters, the gate.",
+      "folder": "House",
+      "revision": 1,
+      "archived": false
+    }
+  ]
+}

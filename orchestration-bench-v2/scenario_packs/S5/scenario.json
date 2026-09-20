@@ -23,7 +23,7 @@
       "node",
       "scenario_packs/S5/private/grade.mjs"
     ],
-    "version": "1.0.0",
+    "version": "1.1.0",
     "expected_check_ids": [
       "C1",
       "C2",
@@ -77,6 +77,52 @@
           "C8",
           "C9"
         ]
+      },
+      {
+        "id": "report-forgery",
+        "path": "scenario_packs/S5/private/known_bad/report-forgery",
+        "must_fail": [
+          "C1",
+          "C2",
+          "C3",
+          "C4",
+          "C5",
+          "C6",
+          "C7",
+          "C8",
+          "C9",
+          "C10"
+        ]
+      },
+      {
+        "id": "mid-import-exit",
+        "path": "scenario_packs/S5/private/known_bad/mid-import-exit",
+        "must_fail": [
+          "C1",
+          "C2",
+          "C3",
+          "C4",
+          "C5",
+          "C6",
+          "C7",
+          "C8",
+          "C9",
+          "C10"
+        ]
+      },
+      {
+        "id": "fake-ipc-result",
+        "path": "scenario_packs/S5/private/known_bad/fake-ipc-result",
+        "must_fail": [
+          "C1",
+          "C2",
+          "C3",
+          "C4",
+          "C5",
+          "C7",
+          "C8",
+          "C9"
+        ]
       }
     ]
   },
@@ -90,5 +136,5 @@
       "instruction": "Where trace evidence exists, note whether consumers were edited in parallel and how conflicts on the shared persistence layer were resolved and reworked."
     }
   ],
-  "notes": "One versioned note record (v1 -> v2: tags string to array, created to normalised createdAt, new required archived and schemaVersion) behind a shared persistence layer and four independently editable consumers, with five real v1 records on disk. The compatibility matrix in TASK.md is the contract for legacy inputs: the API still accepts legacy posts, the three read-only consumers must reject non-v2 records. No particular decomposition is required; the module boundaries exist so parallel work is plausible and conflicts are observable."
+  "notes": "One versioned note record (v1 -> v2: tags string to array, created to normalised createdAt, new required archived and schemaVersion) behind a shared persistence layer and four independently editable consumers, with five real v1 records on disk. The compatibility matrix in TASK.md is the contract for legacy inputs: the API still accepts legacy posts, the three read-only consumers must reject non-v2 records. No particular decomposition is required; the module boundaries exist so parallel work is plausible and conflicts are observable. The grader runs candidate code only in a forked worker that is never told where the report goes and whose results are authenticated with a per-run nonce it cannot read; the supervisor rebuilds the report from its own check list, fails anything it did not hear authenticated, and records early exits, timeouts and unauthenticated messages in details.tamperSignals. This defends the grade against forgery, not the machine: it is not a sandbox."
 }

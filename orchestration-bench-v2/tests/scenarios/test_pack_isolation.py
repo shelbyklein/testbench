@@ -26,8 +26,10 @@ class RegistryTest(unittest.TestCase):
         for pack_id in PACKS:
             scenario = loaded.scenario(pack_id)
             self.assertEqual(scenario['contract'], 'scenario/1')
-            self.assertEqual(scenario['version'], '1.0.0')
-            self.assertEqual(scenario['grader']['version'], '1.0.0')
+            # S4's participant brief changed (review finding F4), so its scenario version moved
+            # with it. Every grader moved to 1.1.0 for the supervisor/worker split (F1, F2).
+            self.assertEqual(scenario['version'], '1.1.0' if pack_id == 'S4' else '1.0.0')
+            self.assertEqual(scenario['grader']['version'], '1.1.0')
 
     def test_calibration_paths_are_real_directories(self):
         loaded = registry.load(support.ROOT, strict=False)

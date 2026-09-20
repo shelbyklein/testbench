@@ -24,7 +24,8 @@ class CalibrationTest(unittest.TestCase):
         report = registry.calibrate(support.scenario('S4'), support.ROOT)
         self.assertEqual(report['status'], 'ok', report['problems'])
         self.assertEqual([f['id'] for f in report['known_bad']],
-                         ['missed-defect', 'plausible-nonbug', 'duplicate-finding', 'count-padding'])
+                         ['missed-defect', 'plausible-nonbug', 'duplicate-finding', 'count-padding',
+                          'path-traversal', 'unknown-export'])
         for fixture in report['known_bad']:
             self.assertTrue(fixture['detected'], fixture)
 

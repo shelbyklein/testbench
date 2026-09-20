@@ -1,7 +1,7 @@
 {
   "contract": "scenario/1",
   "id": "S4",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "slug": "breadth-audit",
   "title": "Audit twelve modules and report what is actually broken",
   "kind": "Breadth audit",
@@ -23,7 +23,7 @@
       "node",
       "scenario_packs/S4/private/grade.mjs"
     ],
-    "version": "1.0.0",
+    "version": "1.1.0",
     "expected_check_ids": [
       "A1",
       "A2",
@@ -70,6 +70,20 @@
           "A3",
           "A7"
         ]
+      },
+      {
+        "id": "path-traversal",
+        "path": "scenario_packs/S4/private/known_bad/path-traversal",
+        "must_fail": [
+          "A1"
+        ]
+      },
+      {
+        "id": "unknown-export",
+        "path": "scenario_packs/S4/private/known_bad/unknown-export",
+        "must_fail": [
+          "A3"
+        ]
       }
     ]
   },
@@ -83,5 +97,5 @@
       "instruction": "Check whether the submission distinguished the spec-conformant oddities from defects in its own prose, rather than reporting everything it noticed."
     }
   ],
-  "notes": "Twelve independent Fieldnotes modules, six seeded behavioral defects and five spec-conformant oddities. Findings are validated by executing the submitted reproduction against the frozen modules shipped with this pack and comparing with the oracle for the same (module, export); wording is never matched. Verdicts are joined to findings by stable finding ID plus source revision (private/aggregate.mjs), never by list index."
+  "notes": "Twelve independent Fieldnotes modules, six seeded behavioral defects and five spec-conformant oddities. Findings are validated by executing the submitted reproduction against the frozen modules shipped with this pack and comparing with the oracle for the same (module, export); wording is never matched. Verdicts are joined to findings by stable finding ID plus source revision (private/aggregate.mjs), never by list index. The grader validates reproduction.module against the exact allow-list of frozen module basenames and verifies containment before anything is imported, and executes reproductions in a forked worker that never learns the report path; the supervisor rebuilds the report from its own check list and records anything unexpected in details.tamperSignals. This defends the grade against forgery, not the machine: it is not a sandbox."
 }

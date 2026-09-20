@@ -21,21 +21,26 @@ A single file `FINDINGS.json` at the root of this repository:
   "findings": [
     {
       "id": "F-01",
-      "module": "search",
-      "location": "src/search.mjs:matchesQuery",
-      "claimedBehavior": "A multi-word query matches a note that contains only one of the terms.",
-      "expectedBehavior": "Every term must appear in the title or the body for the note to match.",
-      "severity": "critical",
+      "module": "kettle",
+      "location": "src/kettle.mjs:boilFor",
+      "claimedBehavior": "boilFor returns the number of minutes rounded down, so a 90-second boil is reported as 1 minute.",
+      "expectedBehavior": "The specification says the remaining seconds are kept, so a 90-second boil is 1.5 minutes.",
+      "severity": "minor",
       "reproduction": {
-        "module": "search",
-        "export": "matchesQuery",
-        "args": [{ "title": "Lamp", "body": "A small brass lamp" }, "small tools"],
-        "observed": true
+        "module": "kettle",
+        "export": "boilFor",
+        "args": [90],
+        "observed": 1
       }
     }
   ]
 }
 ```
+
+**That example is shape only.** There is no `kettle` module in `src/`, there is no `boilFor`,
+and nothing in the example points at any module, export, defect or severity in this pack. It
+is there to show you the fields and how they fit together, nothing else. Work out the real
+findings — and their real severities — from the twelve modules and their doc comments.
 
 Field by field:
 
