@@ -1,0 +1,9 @@
+{
+  "name": "fieldnotes-audit-modules",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Twelve independent Fieldnotes practice modules for the breadth audit.",
+  "scripts": {
+    "test": "node --test tests/smoke.test.mjs"
+  }
+}
