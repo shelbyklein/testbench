@@ -1,20 +1,20 @@
 {
   "contract": "method/1",
   "id": "graph",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "label": "Native graph candidate",
   "mode": "native-graph",
   "configured": false,
   "roles": [
     {
-      "role": "orchestrator node",
+      "role": "planner node",
       "model": {
-        "requested": "RECORD GRAPH ORCHESTRATOR MODEL",
+        "requested": "RECORD GRAPH PLANNER MODEL",
         "effective": null,
         "verified": false
       },
       "reasoning": {
-        "requested": "RECORD REASONING/EFFORT SETTING IF APPLICABLE",
+        "requested": "RECORD REASONING/EFFORT SETTING - must match the comparison arms; /effort ultracode is a CONFOUND",
         "effective": null,
         "verified": false
       }
@@ -27,31 +27,95 @@
         "verified": false
       },
       "reasoning": {
-        "requested": "RECORD REASONING/EFFORT SETTING IF APPLICABLE",
+        "requested": "RECORD REASONING/EFFORT SETTING - must match the comparison arms; /effort ultracode is a CONFOUND",
+        "effective": null,
+        "verified": false
+      }
+    },
+    {
+      "role": "internal reviewer node",
+      "model": {
+        "requested": "RECORD GRAPH INTERNAL REVIEWER MODEL",
+        "effective": null,
+        "verified": false
+      },
+      "reasoning": {
+        "requested": "RECORD REASONING/EFFORT SETTING - must match the comparison arms",
+        "effective": null,
+        "verified": false
+      }
+    },
+    {
+      "role": "integrator node",
+      "model": {
+        "requested": "RECORD GRAPH INTEGRATOR MODEL",
+        "effective": null,
+        "verified": false
+      },
+      "reasoning": {
+        "requested": "RECORD REASONING/EFFORT SETTING - must match the comparison arms",
         "effective": null,
         "verified": false
       }
     }
   ],
-  "transport": "RECORD TRANSPORT: execution adapter runtime and executor command",
+  "transport": "RECORD TRANSPORT: bench-controlled adapter run() with an injected executor. There is no `claude workflow` CLI subcommand, so a live arm needs an explicitly configured `claude` run command recorded in adapter_workflow.live.run_command.",
   "launch_template": "methods/templates/graph.md",
   "internal_review": {
-    "enabled": false,
-    "reviewer_role": null
+    "enabled": true,
+    "reviewer_role": "internal reviewer node"
   },
   "adapter": "adapters/claude_workflow",
+  "adapter_workflow": {
+    "definition": "adapters/claude_workflow/workflow/workflow.json",
+    "workflow_id": "graph-candidate",
+    "workflow_version": "1.0.0",
+    "script": "adapters/claude_workflow/workflow/graph-candidate.v1.js",
+    "script_version": "graph-candidate.v1",
+    "solo_definition": "adapters/claude_workflow/workflow/solo.json",
+    "solo_script": "adapters/claude_workflow/workflow/solo.v1.js",
+    "capability_report": "adapters/claude_workflow/CAPABILITY.md",
+    "capability_status": "available-unverified",
+    "capability_note": "Native dynamic workflows are available in this machine's configuration (Claude Code 2.1.278, no disableWorkflows, /workflow-authoring loadable), but nothing has been executed: execution is a paid model call. No saved workflow command and no `Workflow` permission allow rule exist yet, so the live executor fails closed today.",
+    "live": {
+      "run_command": null,
+      "run_command_note": "RECORD LIVE RUN COMMAND: the exact `claude` invocation the operator sanctions. LiveExecutor refuses without it and never falls back to raw model API calls.",
+      "fails_closed_when": ["run_command is null", "capabilities().available is false"],
+      "paid": true
+    },
+    "offline": {
+      "executor": "FakeExecutor",
+      "provider_free_by_construction": true,
+      "paid": false,
+      "note": "All adapter evidence in tests/workflow is synthetic OFFLINE validation, never paid model execution."
+    },
+    "internal_reviewer": {
+      "fresh_session": true,
+      "inputs": ["specification", "relevant source/diff", "reproducible evidence"],
+      "forbidden_inputs": ["worker conversation", "planner conversation", "external evaluator output"],
+      "usage_charged_to": "candidate"
+    },
+    "join": {
+      "by": ["stableId", "sourceRevision"],
+      "by_list_index": false
+    },
+    "confounds": [
+      "/effort ultracode combines xhigh reasoning effort with automatic workflow orchestration in one switch. A run launched that way is confounded and is not evidence that orchestration alone improved quality. Pin effort identically across arms and opt in by keyword or saved-command name instead.",
+      "An organization availableModels allowlist can substitute a workflow agent's model. None is configured on the inspected machine, but effective models stay null/unverified until a real run is observed."
+    ]
+  },
   "budgets": {
     "max_workers": {
-      "limit": null,
-      "enforcement": "unenforced"
+      "limit": 3,
+      "enforcement": "enforced"
     },
     "max_attempts": {
-      "limit": null,
-      "enforcement": "unenforced"
+      "limit": 12,
+      "enforcement": "enforced"
     },
     "max_minutes": {
-      "limit": null,
-      "enforcement": "unenforced"
+      "limit": 90,
+      "enforcement": "enforced"
     },
     "max_tokens": {
       "limit": null,
@@ -62,5 +126,5 @@
       "enforcement": "unavailable"
     }
   },
-  "notes": "Unconfigured placeholder so experiment definitions can reference a graph candidate. The workflow lane owns the adapter and refines this file; do not treat it as configured."
+  "notes": "Graph candidate driven by adapters/claude_workflow. The worker, attempt and elapsed-time budgets are labelled `enforced` because the bench-controlled run() really stops them and reaps owned subprocesses on timeout; they are enforced only on the adapter path, not on a manual launch. Token and cost budgets are `unavailable`: the native workflow runtime exposes no token or cost ceiling - its large-run warning is explicitly advisory and does not pause or limit a run. Stays configured:false until the operator records the models, the effort setting and the live run command; do not treat it as configured."
 }
