@@ -9,7 +9,10 @@
   "repair": 20,
   "participant": {
     "source": "seed",
-    "brief": "scenarios/S2.md"
+    "brief": "scenarios/S2.md",
+    "runtime_paths": [
+      "data"
+    ]
   },
   "public_checks": [
     [
@@ -82,5 +85,6 @@
       "description": "Use import and feedback by keyboard; inspect accessible labels/status announcements and layout at 390px."
     }
   ],
-  "notes": "v1 scenario carried over unchanged; brief, seed and evaluator are the v1 files. v1 known-correct fixtures were not shipped in the v1 source tree, so calibration.reference is unknown (null)."
+  "notes": "v1 scenario carried over unchanged; brief, seed and evaluator are the v1 files. v1 known-correct fixtures were not shipped in the v1 source tree, so calibration.reference is unknown (null).",
+  "baseline_regression_gate": true
 }

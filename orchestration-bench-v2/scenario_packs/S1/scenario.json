@@ -9,7 +9,10 @@
   "repair": 15,
   "participant": {
     "source": "seed",
-    "brief": "scenarios/S1.md"
+    "brief": "scenarios/S1.md",
+    "runtime_paths": [
+      "data"
+    ]
   },
   "public_checks": [
     [
@@ -72,5 +75,6 @@
       "description": "Exercise keyboard focus, folder/search controls, archive, and 390px layout. No new blocking regression."
     }
   ],
-  "notes": "v1 scenario carried over unchanged; brief, seed and evaluator are the v1 files. v1 known-correct fixtures were not shipped in the v1 source tree, so calibration.reference is unknown (null)."
+  "notes": "v1 scenario carried over unchanged; brief, seed and evaluator are the v1 files. v1 known-correct fixtures were not shipped in the v1 source tree, so calibration.reference is unknown (null).",
+  "baseline_regression_gate": true
 }

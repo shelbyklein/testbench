@@ -9,7 +9,10 @@
   "repair": 20,
   "participant": {
     "source": "seed",
-    "brief": "scenarios/S3.md"
+    "brief": "scenarios/S3.md",
+    "runtime_paths": [
+      "data"
+    ]
   },
   "public_checks": [
     [
@@ -79,5 +82,6 @@
       "description": "Search/folder state is preserved across archive/undo. Exercise at 390px; inspect keyboard access, focus destination, and screen-reader announcement semantics."
     }
   ],
-  "notes": "v1 scenario carried over unchanged; brief, seed and evaluator are the v1 files. v1 known-correct fixtures were not shipped in the v1 source tree, so calibration.reference is unknown (null)."
+  "notes": "v1 scenario carried over unchanged; brief, seed and evaluator are the v1 files. v1 known-correct fixtures were not shipped in the v1 source tree, so calibration.reference is unknown (null).",
+  "baseline_regression_gate": true
 }

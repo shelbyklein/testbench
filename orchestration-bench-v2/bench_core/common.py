@@ -9,7 +9,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 UNKNOWN = None
 PROVENANCE = ('measured', 'estimated', 'unavailable')
-EXCLUDED = {'.git', 'node_modules', 'data', '.bench', '.DS_Store', '__pycache__'}
+EXCLUDED = {'.git', 'node_modules', '.bench', '.DS_Store', '__pycache__'}
+
+
+def excluded_for(scenario):
+    """Global exclusions plus the scenario's declared runtime paths (CONTRACTS.md §5)."""
+    return EXCLUDED | set((scenario.get('participant') or {}).get('runtime_paths') or [])
 
 
 def require(condition, message):

@@ -231,13 +231,14 @@ def capture(exp, rid, phase):
     require(phase not in run['phases'], 'This phase is already captured and cannot be overwritten')
     workspace = folder_for(exp, run); destination = exp / 'snapshots' / rid / phase
     require(not destination.exists(), 'Snapshot directory already exists; inspect state before retrying')
-    end = now(); pre = common.inventory(workspace)
-    destination.parent.mkdir(parents=True, exist_ok=True); copy_source(workspace, destination)
-    hashes = common.inventory(destination)
-    require(pre == common.inventory(workspace) == hashes,
+    scenario = scenario_for(data, run); skip = common.excluded_for(scenario)
+    end = now(); pre = common.inventory(workspace, skip)
+    destination.parent.mkdir(parents=True, exist_ok=True); copy_source(workspace, destination, extra=skip)
+    hashes = common.inventory(destination, skip)
+    require(pre == common.inventory(workspace, skip) == hashes,
             'Workspace changed during capture. Stop all agent writes; inspect this incomplete capture before retrying.')
     elapsed = (dt.datetime.fromisoformat(end) - dt.datetime.fromisoformat(start_time)).total_seconds() / 60
-    scenario = scenario_for(data, run); limit = scenario['minutes' if phase == 'first' else 'repair']
+    limit = scenario['minutes' if phase == 'first' else 'repair']
     brief = root_for(data) / scenario['participant']['brief']
     intact = (workspace / 'TASK.md').exists() and common.digest(workspace / 'TASK.md') == common.digest(brief)
     receipt = {'capturedAt': end, 'elapsedMinutes': round(elapsed, 3), 'allowanceMinutes': limit,
@@ -261,8 +262,8 @@ def evaluate(exp, rid, phase):
     require('evaluation' not in run['phases'][phase],
             'Evaluation already exists. Preserve this result; use a new phase/run for changes.')
     snapshot = exp / 'snapshots' / rid / phase; receipt = read(exp / 'receipts' / rid / f'{phase}.json')
-    require(common.inventory(snapshot) == receipt['hashes'], 'Snapshot integrity check failed; evaluation refused')
     scenario = scenario_for(data, run); root = root_for(data)
+    require(common.inventory(snapshot, common.excluded_for(scenario)) == receipt['hashes'], 'Snapshot integrity check failed; evaluation refused')
     with tempfile.TemporaryDirectory(prefix='ob2-eval-') as temp:
         candidate = Path(temp) / 'submission'; copy_source(snapshot, candidate)
         try:
@@ -282,8 +283,10 @@ def evaluate(exp, rid, phase):
     report['publicChecks'] = public
     report['snapshotVerified'] = True
     report['submissionHash'] = receipt.get('submissionHash')
+    gating = bool(scenario.get('baseline_regression_gate'))  # v1 meaning for S1–S3; a migration may rewrite its smoke test
+    report['publicChecksGate'] = gating
     report['allPassed'] = (bool(report.get('allPassed')) and receipt['taskIntact']
-                           and all(item['exitCode'] == 0 for item in public))
+                           and (not gating or all(item['exitCode'] == 0 for item in public)))
     if not receipt['taskIntact']:
         report['integrityNote'] = 'Participant changed or removed TASK.md'
     write(exp / 'results' / rid / phase / 'evaluation.json', report)

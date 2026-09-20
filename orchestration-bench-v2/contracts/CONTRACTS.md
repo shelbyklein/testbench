@@ -96,6 +96,12 @@ Merge order: core → observation → S4 → S5 → workflow → S6 → review �
 - Paths are relative to the v2 root. `participant.source` is copied into the run workspace; **nothing** under any `private` path,
   and no `scenario.json`, may be copied into a workspace or a review package. The registry enforces that `participant.source`
   is not inside, and does not contain, a `private` path. This is logical separation, not an OS security boundary.
+- `participant.runtime_paths` (optional, additive in ob2-contracts/1.1): top-level names the practice app writes at run time
+  (S1–S3: `["data"]`). They are excluded from capture, snapshots and hashes. Nothing else is excluded, so a pack may ship
+  saved records (S5 ships `data/notes.json`) and they are copied, captured and graded.
+- `baseline_regression_gate` (optional, default false; additive in 1.1): when true the frozen fixture's `public_checks` must still pass
+  for acceptance (v1 meaning, set for S1–S3). Otherwise public checks are run and recorded but do not gate, because a scenario
+  such as S5 legitimately changes the behavior its start-state smoke test asserts; its private grader owns regressions.
 - For S1–S3: `participant.source` = `seed`, `brief` = `scenarios/S<n>.md`, grader argv = `["node","evaluator/checks.mjs","S<n>"]`,
   `expected_check_ids` = the v1 `EXPECTED` sets, `manual_checks` from `evaluator/manual.json`.
 - **Grader CLI**: `<argv…> <candidate_dir> <output.json>`. Exit 0 = all passed, 1 = some failed, anything else = grader error.
