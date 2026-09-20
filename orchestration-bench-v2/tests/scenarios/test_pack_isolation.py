@@ -8,7 +8,7 @@ from pathlib import Path
 from tests.scenarios import support
 from bench_core import registry, experiment
 
-PACKS = ('S4', 'S5')
+PACKS = ('S4', 'S5', 'S6')
 TEXT_SUFFIXES = {'.md', '.mjs', '.js', '.json', '.txt', '.html', '.css'}
 
 
@@ -57,13 +57,18 @@ class ContaminationTest(unittest.TestCase):
                     self.assertNotIn(term, text, f'{path} mentions {term!r}')
 
     def test_no_participant_file_contains_reference_solution_content(self):
-        markers = ['requireV2', 'migrateRecord', 'SCHEMA_VERSION', 'schemaVersion: 2']
-        for path in participant_files('S5'):
-            if path.suffix not in TEXT_SUFFIXES or path.name == 'TASK.md':
-                continue
-            text = path.read_text()
-            for marker in markers:
-                self.assertNotIn(marker, text, f'{path} leaks reference content {marker!r}')
+        markers = {
+            'S5': ['requireV2', 'migrateRecord', 'SCHEMA_VERSION', 'schemaVersion: 2'],
+            'S6': ['appendOnce', 'journalPath', 'renameSync', 'hasKey',
+                   'transport.delivered', 'write-ahead'],
+        }
+        for pack_id, leaks in markers.items():
+            for path in participant_files(pack_id):
+                if path.suffix not in TEXT_SUFFIXES or path.name == 'TASK.md':
+                    continue
+                text = path.read_text()
+                for marker in leaks:
+                    self.assertNotIn(marker, text, f'{path} leaks reference content {marker!r}')
 
     def test_participant_source_never_overlaps_a_private_path(self):
         loaded = registry.load(support.ROOT, strict=False)
@@ -126,7 +131,8 @@ class ContaminationTest(unittest.TestCase):
 class GraderHygieneTest(unittest.TestCase):
     def test_graders_declare_the_check_ids_the_scenario_promises(self):
         loaded = registry.load(support.ROOT, strict=False)
-        for pack_id, fixture in (('S4', 'private/reference'), ('S5', 'private/reference')):
+        for pack_id in PACKS:
+            fixture = 'private/reference'
             scenario = loaded.scenario(pack_id)
             report = support.grade(pack_id, support.ROOT / 'scenario_packs' / pack_id / fixture)
             self.assertEqual(sorted(c['id'] for c in report['checks']),

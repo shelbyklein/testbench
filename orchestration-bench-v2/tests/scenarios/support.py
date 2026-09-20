@@ -11,6 +11,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from bench_core import registry  # noqa: E402
+from bench_core.common import measurement  # noqa: E402
 
 DATA_DIRS = ('methods', 'scenario_packs', 'experiments', 'scenarios', 'seed', 'evaluator')
 
@@ -63,6 +64,57 @@ def copy_registry_root(destination):
             shutil.copytree(source, destination / name,
                             ignore=shutil.ignore_patterns('.git', 'node_modules', '__pycache__'))
     return destination
+
+
+def unavailable(unit, reason):
+    """An explicitly unknown measurement, carrying why it is unknown (contract §3)."""
+    result = measurement(None, unit)
+    result['reason'] = reason
+    return result
+
+
+def recovery_report(first, second, analysis):
+    """Reuse / repeated-work / recovery-cost for one crash-and-restart pair.
+
+    SYNTHETIC. Assembled from the offline adapter result and `metrics.analyze`. Every value
+    is either observed in the trace or reported as unavailable **with a reason**; nothing is
+    filled in with 0, and nothing is inferred from a count of agents or calls.
+    """
+    crash = first.get('crash') or {}
+    effects = [entry['key'] for entry in second.get('effects', [])]
+    reused = list(second.get('reusedNodes') or [])
+    rerun = sorted(r['nodeId'] for r in second.get('replay', []) if not r['reused'])
+    wall = (analysis.get('wallTime') or {}).get('seconds') or {}
+    usage = (analysis.get('usageTotals') or {}).get('inputTokens') or {}
+
+    return {
+        'synthetic': True,
+        'note': 'simulated worker recovery through the offline adapter; not a verified real '
+                'coding-agent restart',
+        'milestone': crash.get('milestone'),
+        'interruptedNode': crash.get('nodeId'),
+        'reusedNodes': reused,
+        'reuseIdentityChecks': ['sourceRevision', 'artifactHash'],
+        'repeatedWorkNodes': rerun,
+        'duplicatedEffects': sorted({k for k in effects if effects.count(k) > 1}),
+        'faults': (analysis.get('faults') or {}).get('count'),
+        'retries': (analysis.get('retries') or {}).get('nodes'),
+        # Observed: the restart run's own wall time, from the interval union.
+        'restartWallSeconds': (dict(wall) if wall.get('value') is not None
+                               else unavailable('seconds', (analysis.get('trace') or {})
+                                                .get('issues') and 'the trace has open intervals'
+                                                or 'no measured interval in the trace')),
+        # Not observed: the fake executor reports no token usage at all.
+        'recoveryTokens': unavailable(
+            'tokens', 'the executor reports no token usage; '
+                      f'{usage.get("unknownCount", 0)} unknown measurement(s) in the trace'),
+        'recoveryCostUSD': unavailable(
+            'usd', 'no cost is observable offline; a paid run was never made'),
+        'criticalPathSeconds': ((analysis.get('criticalPath') or {}).get('seconds')
+                                if (analysis.get('criticalPath') or {}).get('supported')
+                                else unavailable('seconds',
+                                                 (analysis.get('criticalPath') or {}).get('reason'))),
+    }
 
 
 def node_test(*relative_paths):
