@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Blind review</title>
+<!-- This page is served by the separate review server. It is deliberately self-contained:
+     it loads no stylesheet, script, font or image from anywhere, and it calls only
+     /review/api/*. There is no route from here to operator data, and no operator term
+     (method, model, run ID, schedule position) is ever requested or displayed. -->
+<style>
+:root{
+  color-scheme: light dark;
+  --bg:#f4f2ea; --panel:#fffdf7; --panel-2:#eceadf; --ink:#1b2a24; --muted:#4c5c54;
+  --line:#c6cec3; --line-soft:#dfe3d8; --accent:#8a3c20; --focus:#0a4f96;
+  --ok-bg:#d8e8d6; --ok-ink:#1f4b2a; --bad-bg:#f5ded4; --bad-ink:#7d3320;
+  --wait-bg:#f2e6c9; --wait-ink:#6a5217;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#12161a; --panel:#1b2126; --panel-2:#232a30; --ink:#e9eeea; --muted:#aebab3;
+    --line:#3a444c; --line-soft:#2c343a; --accent:#f0a27c; --focus:#7cc4ff;
+    --ok-bg:#1e3a27; --ok-ink:#a9e0b4; --bad-bg:#452019; --bad-ink:#f4b6a2;
+    --wait-bg:#453714; --wait-ink:#f0d79a;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.55;
+  font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;overflow-wrap:break-word}
+h1,h2,h3,h4{line-height:1.2;margin:0 0 .5rem}
+h1{font-size:1.5rem}h2{font-size:1.1rem}h3{font-size:.95rem}
+h4{font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+p{margin:0 0 .7rem}
+.wrap{max-width:1280px;margin:0 auto;padding:0 20px 60px}
+.skip{position:absolute;left:-9999px;top:0;z-index:50;background:var(--panel);
+  padding:10px 16px;border:2px solid var(--focus);color:var(--ink)}
+.skip:focus{left:0}
+.vh{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);
+  clip-path:inset(50%);white-space:nowrap}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px;border-radius:3px}
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{
+  animation-duration:.001ms!important;transition-duration:.001ms!important;scroll-behavior:auto!important}}
+header.site{background:var(--panel);border-bottom:1px solid var(--line)}
+.site-inner{max-width:1280px;margin:0 auto;padding:16px 20px;display:flex;flex-wrap:wrap;
+  gap:14px;align-items:center;justify-content:space-between}
+.brand{font-weight:700}
+.brand small{display:block;font-weight:400;font-size:.75rem;color:var(--muted)}
+button,select,input,textarea{font:inherit;color:var(--ink)}
+button{cursor:pointer;background:var(--panel);border:1px solid var(--line);border-radius:6px;
+  padding:8px 12px;font-size:.82rem;font-weight:600}
+button:hover{background:var(--panel-2)}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) button.primary{color:#221008}}
+button.small{padding:5px 9px;font-size:.75rem}
+button.file{display:block;width:100%;text-align:left;font-weight:400;font-family:ui-monospace,Menlo,monospace;
+  font-size:.76rem;border-color:transparent;background:transparent;overflow-wrap:anywhere}
+button.file[aria-current="true"]{background:var(--panel-2);border-color:var(--line)}
+select,input,textarea{background:var(--panel);border:1px solid var(--line);border-radius:6px;
+  padding:8px 10px;font-size:.85rem;width:100%;max-width:100%}
+textarea{min-height:70px;resize:vertical}
+fieldset{border:1px solid var(--line);border-radius:8px;margin:0 0 12px;padding:10px 12px}
+legend{font-size:.76rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);padding:0 6px}
+.field{margin:10px 0}
+.field>label,.label{display:block;font-size:.75rem;color:var(--muted);margin-bottom:4px}
+label.dim{text-transform:capitalize;font-size:.85rem;color:var(--ink);font-weight:600}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;margin:14px 0}
+.cols{display:grid;gap:16px;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr)}
+.notice{background:var(--panel-2);border-left:4px solid var(--accent);padding:11px 14px;
+  border-radius:0 6px 6px 0;font-size:.85rem;margin:12px 0}
+.notice.bad{background:var(--bad-bg);color:var(--bad-ink);border-left-color:var(--bad-ink)}
+.notice.ok{background:var(--ok-bg);color:var(--ok-ink);border-left-color:var(--ok-ink)}
+.pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:.72rem;font-weight:700;
+  background:var(--panel-2);color:var(--muted);border:1px solid var(--line)}
+.pill.ok{background:var(--ok-bg);color:var(--ok-ink);border-color:transparent}
+.pill.bad{background:var(--bad-bg);color:var(--bad-ink);border-color:transparent}
+.unknown{font-weight:600;color:var(--bad-ink);background:var(--bad-bg);border-radius:4px;padding:1px 6px;font-size:.78rem}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;overflow-wrap:anywhere}
+.small{font-size:.8rem;color:var(--muted)}
+pre{background:var(--panel-2);border:1px solid var(--line-soft);border-radius:6px;padding:12px;
+  font-size:.76rem;line-height:1.5;max-width:100%;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere}
+.scrollbox{max-height:420px;overflow:auto}
+ul.plain{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+ul.plain li{border:1px solid var(--line-soft);border-radius:6px;padding:8px 10px;font-size:.82rem}
+.stack{display:grid;gap:8px}
+.sub-button{display:block;width:100%;text-align:left}
+.sub-button[aria-current="true"]{border-color:var(--accent);box-shadow:inset 3px 0 0 var(--accent)}
+.kv{display:grid;grid-template-columns:max-content 1fr;gap:4px 14px;font-size:.82rem;margin:0}
+.kv dt{color:var(--muted)}.kv dd{margin:0;overflow-wrap:anywhere}
+.toast{position:fixed;inset-inline-end:16px;inset-block-end:16px;z-index:60;background:var(--ink);
+  color:var(--bg);padding:12px 16px;border-radius:8px;max-width:min(460px,92vw);font-size:.82rem}
+.toast.error{background:var(--bad-ink);color:#fff}
+.hidden{display:none!important}
+footer.site{border-top:1px solid var(--line);margin-top:28px;padding-top:16px;font-size:.78rem;color:var(--muted)}
+@media (max-width: 900px){.cols{grid-template-columns:1fr}}
+@media (max-width: 760px){
+  body{font-size:14px}.wrap,.site-inner{padding-inline:14px}h1{font-size:1.25rem}
+  .site-inner{align-items:flex-start}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the submissions</a>
+<header class="site">
+  <div class="site-inner">
+    <div class="brand">Blind review
+      <small>You are judging submitted work only. Nothing here says who or what produced it.</small>
+    </div>
+    <div>
+      <label class="label" for="phase">Package set</label>
+      <select id="phase">
+        <option value="first">First submissions</option>
+        <option value="repaired">Repaired submissions</option>
+      </select>
+    </div>
+  </div>
+</header>
+
+<main id="main" class="wrap" tabindex="-1">
+  <h1>Submissions awaiting review</h1>
+  <div id="cues" class="notice"></div>
+  <div id="stale" class="notice bad hidden" role="alert"></div>
+
+  <div class="cols">
+    <section class="panel" aria-labelledby="list-heading">
+      <h2 id="list-heading">Packages</h2>
+      <p class="small">Listed by label, in the order the server returned. The order carries no meaning.</p>
+      <div id="submission-list" class="stack"></div>
+    </section>
+
+    <section id="detail" aria-live="polite">
+      <p class="small">Choose a package to begin.</p>
+    </section>
+  </div>
+
+  <footer class="site">
+    <p>Anonymity is best-effort. Submitted source can still reveal its author, so judge the work,
+      not your guess about its origin. Record what you actually ran and saw.</p>
+  </footer>
+</main>
+
+<div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+
+<script>
+'use strict';
+const TOKEN = '__REVIEW_TOKEN__';
+const state = { phase: 'first', list: [], label: null, projection: null, file: null, defects: [] };
+
+const $ = (selector) => document.querySelector(selector);
+const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (c) => (
+  { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+let toastTimer = null;
+function toast(message, isError) {
+  const node = $('#toast');
+  node.textContent = message;
+  node.className = 'toast' + (isError ? ' error' : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => node.classList.add('hidden'), 7000);
+}
+
+async function get(path) {
+  const response = await fetch(path);
+  if (!response.ok) throw new Error('Request failed (' + response.status + ')');
+  return response;
+}
+
+async function loadList() {
+  state.label = null; state.projection = null; state.file = null;
+  const payload = await (await get('/review/api/submissions?phase=' + encodeURIComponent(state.phase))).json();
+  // The server already sorted these by label. Never re-sort: any other order could leak schedule position.
+  state.list = payload.submissions || [];
+  $('#cues').innerHTML = '<strong>Residual cues:</strong> ' + esc(payload.residualCues || '');
+  renderList();
+  $('#detail').innerHTML = '<p class="small">' + state.list.length + ' package(s) in this set. '
+    + 'Choose one to begin.</p>';
+}
+
+function renderList() {
+  $('#submission-list').innerHTML = state.list.map((row) => '<button type="button" class="sub-button" '
+    + 'data-label="' + esc(row.label) + '" aria-current="' + (row.label === state.label) + '">'
+    + '<span class="mono">' + esc(row.label) + '</span> · ' + esc(row.scenario) + ' v'
+    + esc(row.scenarioVersion) + '<br><span class="small">repeat ' + esc(row.repeat) + ' · '
+    + esc(row.fileCount) + ' files · automated checks '
+    + esc(row.evaluation.passed) + '/' + esc(row.evaluation.total) + '</span></button>').join('')
+    || '<p class="small">No evaluated package is available in this set yet.</p>';
+}
+
+async function openSubmission(label) {
+  state.label = label;
+  state.file = null;
+  state.projection = await (await get('/review/api/submission/' + encodeURIComponent(label)
+    + '?phase=' + encodeURIComponent(state.phase))).json();
+  state.defects = (state.projection.reviewTemplate.blank.defects || []).slice();
+  $('#stale').classList.add('hidden');
+  renderList();
+  renderDetail();
+}
+
+function defectRows() {
+  return state.defects.map((defect, index) => '<fieldset data-defect="' + index + '">'
+    + '<legend>Defect ' + (index + 1) + '</legend>'
+    + '<div class="field"><label for="defect-severity-' + index + '">Severity</label>'
+    + '<select id="defect-severity-' + index + '">'
+    + (state.projection.reviewTemplate.severities || []).map((s) => '<option value="' + esc(s) + '"'
+      + (defect.severity === s ? ' selected' : '') + '>' + esc(s) + '</option>').join('')
+    + '</select></div>'
+    + '<div class="field"><label for="defect-evidence-' + index + '">How to reproduce it, and what it costs the user</label>'
+    + '<textarea id="defect-evidence-' + index + '">' + esc(defect.evidence || '') + '</textarea></div>'
+    + '<button type="button" class="small" data-remove-defect="' + index + '">Remove this defect</button>'
+    + '</fieldset>').join('');
+}
+
+function renderDetail() {
+  const projection = state.projection;
+  if (!projection) return;
+  const template = projection.reviewTemplate;
+  const range = template.scoreRange || [0, 3];
+  const values = [];
+  for (let n = range[0]; n <= range[1]; n += 1) values.push(n);
+
+  const checks = (projection.evaluation.checks || []).map((check) => '<li>'
+    + '<span class="pill ' + (check.status === 'pass' ? 'ok' : 'bad') + '">' + esc(check.status) + '</span> '
+    + '<span class="mono">' + esc(check.id) + '</span> ' + esc(check.description) + '</li>').join('');
+
+  const files = (projection.files || []).map((entry) => '<button type="button" class="file" '
+    + 'data-file="' + esc(entry.path) + '" aria-current="' + (entry.path === state.file) + '">'
+    + esc(entry.path) + '</button>').join('');
+
+  const scores = (template.dimensions || []).map((key) => '<div class="field">'
+    + '<label class="dim" for="score-' + esc(key) + '">' + esc(key.replace(/_/g, ' ')) + '</label>'
+    + '<select id="score-' + esc(key) + '"><option value="">unknown / not judged</option>'
+    + values.map((n) => '<option value="' + n + '">' + n + '</option>').join('') + '</select>'
+    + '<textarea id="evidence-' + esc(key) + '" aria-label="' + esc(key.replace(/_/g, ' '))
+    + ' evidence" placeholder="What you ran, and what you saw"></textarea></div>').join('');
+
+  const blankManual = (template.blank && template.blank.manual) || [];
+  const manual = (template.manualChecks || []).map((item) => '<fieldset>'
+    + '<legend>' + esc(item.id) + '</legend><p class="small">' + esc(item.description) + '</p>'
+    + '<div class="field"><label for="manual-' + esc(item.id) + '">Result</label>'
+    + '<select id="manual-' + esc(item.id) + '">'
+    // The blank review's status is the default, so nothing is claimed as run until you say so.
+    + (template.manualStatus || []).map((s) => '<option value="' + esc(s) + '"'
+      + (((blankManual.find((m) => m.id === item.id) || {}).status || 'not_run') === s ? ' selected' : '')
+      + '>' + esc(s.replace(/_/g, ' ')) + '</option>').join('')
+    + '</select></div>'
+    + '<div class="field"><label for="manual-evidence-' + esc(item.id) + '">Evidence</label>'
+    + '<textarea id="manual-evidence-' + esc(item.id) + '"></textarea></div></fieldset>').join('');
+
+  $('#detail').innerHTML = '<div class="panel"><h2 class="mono">' + esc(projection.label) + '</h2>'
+    + '<dl class="kv"><dt>Task</dt><dd>' + esc(projection.scenario) + ' version '
+    + esc(projection.scenarioVersion) + '</dd>'
+    + '<dt>Repeat</dt><dd>' + esc(projection.repeat) + '</dd>'
+    + '<dt>Package set</dt><dd>' + esc(projection.phase) + '</dd>'
+    + '<dt>Files</dt><dd>' + esc(projection.files.length) + '</dd>'
+    + '<dt>Package fingerprint</dt><dd class="mono">' + esc(projection.submissionHash) + '</dd>'
+    + '<dt>Checker version</dt><dd class="mono">' + esc(projection.evaluatorVersion) + '</dd></dl></div>'
+
+    + '<div class="panel"><h3>Automated check results</h3>'
+    + '<p class="small">' + esc(projection.evaluation.passed) + ' of '
+    + esc(projection.evaluation.total) + ' passed. These are the checker\'s own results; '
+    + 'its internals are not part of this package.</p>'
+    + '<ul class="plain">' + (checks || '<li>No checks were reported.</li>') + '</ul></div>'
+
+    + '<div class="panel"><h3>Submitted files</h3>'
+    + '<div class="cols"><div class="scrollbox" id="file-list">' + files + '</div>'
+    + '<div><pre id="file-view" class="scrollbox" tabindex="0">Choose a file to read it here.</pre></div>'
+    + '</div></div>'
+
+    + '<form class="panel" id="review-form" novalidate><h3>Your review</h3>'
+    + '<p class="small">Score ' + esc(range[0]) + ' to ' + esc(range[1])
+    + '. Leave a dimension unscored when you did not verify it — unscored is not the same as zero.</p>'
+    + '<div class="field"><label for="reviewer">Your reviewer ID</label><input id="reviewer" required></div>'
+    + scores
+    + '<h4>Manual checks</h4>' + (manual || '<p class="small">This task declares no manual checks.</p>')
+    + '<h4>Unresolved defects</h4><div id="defects">' + defectRows() + '</div>'
+    + '<button type="button" class="small" id="add-defect">Add a defect</button>'
+    + '<div class="field"><label for="notes">Notes and the limits of your review</label>'
+    + '<textarea id="notes"></textarea></div>'
+    + '<button type="submit" class="primary" id="submit-review">Submit this review</button></form>';
+}
+
+async function openFile(path) {
+  state.file = path;
+  const response = await get('/review/api/file/' + encodeURIComponent(state.label) + '/'
+    + path.split('/').map(encodeURIComponent).join('/') + '?phase=' + encodeURIComponent(state.phase));
+  $('#file-view').textContent = await response.text();
+  document.querySelectorAll('#file-list button.file').forEach((button) => {
+    button.setAttribute('aria-current', String(button.dataset.file === path));
+  });
+}
+
+function collectReview() {
+  const template = state.projection.reviewTemplate;
+  const review = {
+    reviewer: $('#reviewer').value,
+    scores: {},
+    manual: (template.manualChecks || []).map((item) => ({
+      id: item.id,
+      status: $('#manual-' + item.id).value,
+      evidence: $('#manual-evidence-' + item.id).value,
+    })),
+    defects: state.defects.map((defect, index) => ({
+      severity: $('#defect-severity-' + index).value,
+      evidence: $('#defect-evidence-' + index).value,
+    })),
+    notes: $('#notes').value,
+  };
+  (template.dimensions || []).forEach((key) => {
+    const raw = $('#score-' + key).value;
+    review.scores[key] = { value: raw === '' ? null : Number(raw), evidence: $('#evidence-' + key).value };
+  });
+  return review;
+}
+
+function readDefects() {
+  state.defects = state.defects.map((defect, index) => ({
+    severity: $('#defect-severity-' + index).value,
+    evidence: $('#defect-evidence-' + index).value,
+  }));
+}
+
+async function submitReview() {
+  const projection = state.projection;
+  const response = await fetch('/review/api/review', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Review-Token': TOKEN },
+    body: JSON.stringify({
+      label: projection.label, phase: projection.phase,
+      submissionHash: projection.submissionHash, evaluatorVersion: projection.evaluatorVersion,
+      review: collectReview(),
+    }),
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (response.status === 409) {
+    const stale = $('#stale');
+    stale.innerHTML = '<strong>This package is out of date.</strong> '
+      + esc(payload.error || 'The submission changed after this package was built.')
+      + ' Your review was not saved. Reload the package, read the current submission, and review that.'
+      + ' <button type="button" class="small" id="reload-package">Reload this package</button>';
+    stale.classList.remove('hidden');
+    stale.setAttribute('tabindex', '-1');
+    stale.focus();
+    return;
+  }
+  if (!response.ok) { toast(payload.error || 'The review was not accepted.', true); return; }
+  $('#stale').classList.add('hidden');
+  toast('Review saved for ' + payload.label + '.');
+}
+
+document.addEventListener('click', async (event) => {
+  const button = event.target.closest('button');
+  if (!button) return;
+  try {
+    if (button.dataset.label) { await openSubmission(button.dataset.label); return; }
+    if (button.dataset.file) { await openFile(button.dataset.file); return; }
+    if (button.id === 'reload-package') { await openSubmission(state.label); return; }
+    if (button.id === 'add-defect') {
+      readDefects();
+      state.defects.push({ severity: (state.projection.reviewTemplate.severities || ['minor'])[2]
+        || 'minor', evidence: '' });
+      $('#defects').innerHTML = defectRows();
+      const last = $('#defects').querySelector('fieldset:last-of-type select');
+      if (last) last.focus();
+      return;
+    }
+    if (button.dataset.removeDefect !== undefined) {
+      readDefects();
+      state.defects.splice(Number(button.dataset.removeDefect), 1);
+      $('#defects').innerHTML = defectRows();
+      $('#add-defect').focus();
+      return;
+    }
+  } catch (error) { toast(error.message, true); }
+});
+
+document.addEventListener('submit', async (event) => {
+  if (event.target.id !== 'review-form') return;
+  event.preventDefault();
+  try { await submitReview(); } catch (error) { toast(error.message, true); }
+});
+
+$('#phase').addEventListener('change', async (event) => {
+  state.phase = event.target.value;
+  try { await loadList(); } catch (error) { toast(error.message, true); }
+});
+
+loadList().catch((error) => toast(error.message, true));
+</script>
+</body>
+</html>

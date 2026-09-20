@@ -1,0 +1,597 @@
+{
+  "playwright": "1.63.0",
+  "node": "v24.18.0",
+  "checks": [
+    {
+      "name": "desktop: dashboard synthetic banner",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "desktop: dashboard readiness blockers listed",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "desktop: dashboard names the integrity state",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "desktop: dashboard discloses the schedule balance",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "desktop: runs are grouped by pair key",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "desktop: a stale review is called out",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "desktop: dashboard has no horizontal overflow",
+      "ok": true,
+      "detail": "{\"scrollWidth\":1440,\"innerWidth\":1440}"
+    },
+    {
+      "name": "desktop: keyboard reaches the view tabs",
+      "ok": true,
+      "detail": "tab presses: 6"
+    },
+    {
+      "name": "desktop: focus is visible on the tab",
+      "ok": true,
+      "detail": "{\"tag\":\"BUTTON\",\"id\":\"tab-runs\",\"outlineWidth\":\"3px\",\"outlineStyle\":\"solid\",\"boxShadow\":\"rgb(138, 60, 32) 0px 3px 0px 0px inset\"}"
+    },
+    {
+      "name": "desktop: arrow key opens the trace view",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "desktop: trace shows node attempts",
+      "ok": true,
+      "detail": "SYNTHETIC TRACE run-zz0001 · Zebra-Method-Q7 · 28 events\n\nMissing or failed work in this run.\nworker-d — declared, never observed: its output is MISSING, not empty.\nworker-c — FAILED. Its outputs are "
+    },
+    {
+      "name": "desktop: trace shows the failed node explicitly",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "desktop: trace shows the missing node explicitly",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "desktop: trace marks a stale source revision",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "desktop: trace marks a reused artifact",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "desktop: trace links evidence references",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "desktop: trace names the join state",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "desktop: trace declares itself synthetic",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "desktop: a missing node is never drawn as a success",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "desktop: trace view has no horizontal overflow",
+      "ok": true,
+      "detail": "{\"scrollWidth\":1440,\"innerWidth\":1440}"
+    },
+    {
+      "name": "desktop: a trace disclosure opens from the keyboard",
+      "ok": true,
+      "detail": "before=false"
+    },
+    {
+      "name": "desktop: an unavailable cost renders as \"unknown\"",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "desktop: an unknown cost is not shown as 0",
+      "ok": true,
+      "detail": "0.0800 usd partial (1 unknown)AGGREGATE\n(aggregated from trace:run-zz0003)"
+    },
+    {
+      "name": "desktop: a partial aggregate says how many values are unknown",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "desktop: provenance labels are present",
+      "ok": true,
+      "detail": "measured|Source: fixture\nunavailable|No source was recorded.\nunavailable|No source was recorded.\nmeasured|Source: fixture\nestimated|Source: operator estimate from token counts\nmeasured|Source: trace:r"
+    },
+    {
+      "name": "desktop: an estimated value is distinguished from a measured one",
+      "ok": true,
+      "detail": "measured|Source: fixture\nunavailable|No source was recorded.\nunavailable|No source was recorded.\nmeasured|Source: fixture\nestimated|Source: operator estimate from token counts\nmeasured|Source: trace:run-zz0003\nmeasured|Source: trace:run-zz0003\nunavailable|No source was recorded.\nunavailable|No sourc"
+    },
+    {
+      "name": "desktop: provenance carries its source as accessible text",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "desktop: arrow key opens the comparison view",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "desktop: comparison refuses to name a winner",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "desktop: comparison shows no composite score",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "desktop: comparison separates human effort",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "desktop: comparison shows a per-role breakdown",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "desktop: comparison reports reconciliation",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "desktop: comparison lists incomplete traces",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "desktop: comparison separates task and repeat variation",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "desktop: comparison shows paired wins, losses and ties",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "desktop: comparison shows raw per-run rows",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "desktop: comparison has no horizontal overflow",
+      "ok": true,
+      "detail": "{\"scrollWidth\":1440,\"innerWidth\":1440}"
+    },
+    {
+      "name": "desktop: arrow keys wrap back to the runs view",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "desktop: Enter on a run button selects that run",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "desktop: launch text is available",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "desktop: dashboard logged no console error",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "desktop: review lists packages by label only",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "desktop: review shows the residual-cues notice",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "desktop: review list has no horizontal overflow",
+      "ok": true,
+      "detail": "{\"scrollWidth\":1440,\"innerWidth\":1440}"
+    },
+    {
+      "name": "desktop: review shows automated check results",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "desktop: review offers a file browser",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "desktop: a submitted file can be read",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "desktop: review detail has no horizontal overflow",
+      "ok": true,
+      "detail": "{\"scrollWidth\":1440,\"innerWidth\":1440}"
+    },
+    {
+      "name": "desktop: keyboard reaches the submit button",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "desktop: focus is visible on the review submit button",
+      "ok": true,
+      "detail": "{\"tag\":\"BUTTON\",\"id\":\"submit-review\",\"outlineWidth\":\"3px\",\"outlineStyle\":\"solid\",\"boxShadow\":\"none\"}"
+    },
+    {
+      "name": "desktop: a review submits from the keyboard",
+      "ok": true,
+      "detail": "Review saved for B-8F0733."
+    },
+    {
+      "name": "desktop: review page logged no console error",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "desktop: a stale package tells the reviewer to reload",
+      "ok": true,
+      "detail": "This package is out of date. The submission changed after this review package was built. Rebuild the review package and review the current submission. Your review was not saved. Reload the package, read the current submission, and review that. Reload this package"
+    },
+    {
+      "name": "desktop: a stale review is not reported as saved",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "desktop: the review page requests nothing outside its own server",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "desktop: the review page requests no operator endpoint",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "desktop: no method label, model name or run ID reaches the review page",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "desktop: review page raised no script error",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "mobile: dashboard synthetic banner",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "mobile: dashboard readiness blockers listed",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "mobile: dashboard names the integrity state",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "mobile: dashboard discloses the schedule balance",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "mobile: runs are grouped by pair key",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "mobile: a stale review is called out",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "mobile: dashboard has no horizontal overflow",
+      "ok": true,
+      "detail": "{\"scrollWidth\":390,\"innerWidth\":390}"
+    },
+    {
+      "name": "mobile: keyboard reaches the view tabs",
+      "ok": true,
+      "detail": "tab presses: 6"
+    },
+    {
+      "name": "mobile: focus is visible on the tab",
+      "ok": true,
+      "detail": "{\"tag\":\"BUTTON\",\"id\":\"tab-runs\",\"outlineWidth\":\"3px\",\"outlineStyle\":\"solid\",\"boxShadow\":\"rgb(240, 162, 124) 0px 3px 0px 0px inset\"}"
+    },
+    {
+      "name": "mobile: arrow key opens the trace view",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "mobile: trace shows node attempts",
+      "ok": true,
+      "detail": "SYNTHETIC TRACE run-zz0001 · Zebra-Method-Q7 · 28 events\n\nMissing or failed work in this run.\nworker-d — declared, never observed: its output is MISSING, not empty.\nworker-c — FAILED. Its outputs are "
+    },
+    {
+      "name": "mobile: trace shows the failed node explicitly",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "mobile: trace shows the missing node explicitly",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "mobile: trace marks a stale source revision",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "mobile: trace marks a reused artifact",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "mobile: trace links evidence references",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "mobile: trace names the join state",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "mobile: trace declares itself synthetic",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "mobile: a missing node is never drawn as a success",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "mobile: trace view has no horizontal overflow",
+      "ok": true,
+      "detail": "{\"scrollWidth\":390,\"innerWidth\":390}"
+    },
+    {
+      "name": "mobile: a trace disclosure opens from the keyboard",
+      "ok": true,
+      "detail": "before=false"
+    },
+    {
+      "name": "mobile: an unavailable cost renders as \"unknown\"",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "mobile: an unknown cost is not shown as 0",
+      "ok": true,
+      "detail": "0.0800 usd partial (1 unknown)AGGREGATE\n(aggregated from trace:run-zz0003)"
+    },
+    {
+      "name": "mobile: a partial aggregate says how many values are unknown",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "mobile: provenance labels are present",
+      "ok": true,
+      "detail": "measured|Source: fixture\nunavailable|No source was recorded.\nunavailable|No source was recorded.\nmeasured|Source: fixture\nestimated|Source: operator estimate from token counts\nmeasured|Source: trace:r"
+    },
+    {
+      "name": "mobile: an estimated value is distinguished from a measured one",
+      "ok": true,
+      "detail": "measured|Source: fixture\nunavailable|No source was recorded.\nunavailable|No source was recorded.\nmeasured|Source: fixture\nestimated|Source: operator estimate from token counts\nmeasured|Source: trace:run-zz0003\nmeasured|Source: trace:run-zz0003\nunavailable|No source was recorded.\nunavailable|No sourc"
+    },
+    {
+      "name": "mobile: provenance carries its source as accessible text",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "mobile: arrow key opens the comparison view",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "mobile: comparison refuses to name a winner",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "mobile: comparison shows no composite score",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "mobile: comparison separates human effort",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "mobile: comparison shows a per-role breakdown",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "mobile: comparison reports reconciliation",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "mobile: comparison lists incomplete traces",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "mobile: comparison separates task and repeat variation",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "mobile: comparison shows paired wins, losses and ties",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "mobile: comparison shows raw per-run rows",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "mobile: comparison has no horizontal overflow",
+      "ok": true,
+      "detail": "{\"scrollWidth\":390,\"innerWidth\":390}"
+    },
+    {
+      "name": "mobile: arrow keys wrap back to the runs view",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "mobile: Enter on a run button selects that run",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "mobile: launch text is available",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "mobile: dashboard logged no console error",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "mobile: review lists packages by label only",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "mobile: review shows the residual-cues notice",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "mobile: review list has no horizontal overflow",
+      "ok": true,
+      "detail": "{\"scrollWidth\":390,\"innerWidth\":390}"
+    },
+    {
+      "name": "mobile: review shows automated check results",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "mobile: review offers a file browser",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "mobile: a submitted file can be read",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "mobile: review detail has no horizontal overflow",
+      "ok": true,
+      "detail": "{\"scrollWidth\":390,\"innerWidth\":390}"
+    },
+    {
+      "name": "mobile: keyboard reaches the submit button",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "mobile: focus is visible on the review submit button",
+      "ok": true,
+      "detail": "{\"tag\":\"BUTTON\",\"id\":\"submit-review\",\"outlineWidth\":\"3px\",\"outlineStyle\":\"solid\",\"boxShadow\":\"none\"}"
+    },
+    {
+      "name": "mobile: a review submits from the keyboard",
+      "ok": true,
+      "detail": "Review saved for B-8F0733."
+    },
+    {
+      "name": "mobile: review page logged no console error",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "mobile: a stale package tells the reviewer to reload",
+      "ok": true,
+      "detail": "This package is out of date. The submission changed after this review package was built. Rebuild the review package and review the current submission. Your review was not saved. Reload the package, read the current submission, and review that. Reload this package"
+    },
+    {
+      "name": "mobile: a stale review is not reported as saved",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "mobile: the review page requests nothing outside its own server",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "mobile: the review page requests no operator endpoint",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "mobile: no method label, model name or run ID reaches the review page",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "mobile: review page raised no script error",
+      "ok": true,
+      "detail": ""
+    }
+  ],
+  "failures": 0
+}
