@@ -1,0 +1,66 @@
+{
+  "contract": "method/1",
+  "id": "ir-graph-plain",
+  "version": "1.0.0",
+  "label": "Ablation - graph without internal reviewer",
+  "mode": "native-graph",
+  "configured": false,
+  "roles": [
+    {
+      "role": "orchestrator node",
+      "model": {
+        "requested": "RECORD GRAPH ORCHESTRATOR MODEL FOR THE ABLATION",
+        "effective": null,
+        "verified": false
+      },
+      "reasoning": {
+        "requested": "RECORD REASONING/EFFORT SETTING IF APPLICABLE",
+        "effective": null,
+        "verified": false
+      }
+    },
+    {
+      "role": "shared worker",
+      "model": {
+        "requested": "RECORD SHARED WORKER MODEL (one value, used by every fixed-worker variant)",
+        "effective": null,
+        "verified": false
+      },
+      "reasoning": {
+        "requested": "RECORD SHARED WORKER REASONING/EFFORT SETTING (one value, used by every fixed-worker variant)",
+        "effective": null,
+        "verified": false
+      }
+    }
+  ],
+  "transport": "RECORD TRANSPORT: execution adapter runtime driving the shared worker",
+  "launch_template": "methods/templates/graph.md",
+  "internal_review": {
+    "enabled": false,
+    "reviewer_role": null
+  },
+  "adapter": "adapters/claude_workflow",
+  "budgets": {
+    "max_workers": {
+      "limit": null,
+      "enforcement": "unenforced"
+    },
+    "max_attempts": {
+      "limit": null,
+      "enforcement": "unenforced"
+    },
+    "max_minutes": {
+      "limit": null,
+      "enforcement": "unenforced"
+    },
+    "max_tokens": {
+      "limit": null,
+      "enforcement": "unavailable"
+    },
+    "max_cost_usd": {
+      "limit": null,
+      "enforcement": "unavailable"
+    }
+  },
+  "notes": "Internal-reviewer ablation arm. The two reviewed arms use the identical reviewer (one recorded value); the unreviewed arms are otherwise the same setup with the reviewer node removed. The external evaluator is unaffected and stays separate."
+}

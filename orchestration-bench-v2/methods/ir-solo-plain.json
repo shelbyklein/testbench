@@ -1,0 +1,53 @@
+{
+  "contract": "method/1",
+  "id": "ir-solo-plain",
+  "version": "1.0.0",
+  "label": "Ablation - solo without internal reviewer",
+  "mode": "solo",
+  "configured": false,
+  "roles": [
+    {
+      "role": "shared worker",
+      "model": {
+        "requested": "RECORD SHARED WORKER MODEL (one value, used by every fixed-worker variant)",
+        "effective": null,
+        "verified": false
+      },
+      "reasoning": {
+        "requested": "RECORD SHARED WORKER REASONING/EFFORT SETTING (one value, used by every fixed-worker variant)",
+        "effective": null,
+        "verified": false
+      }
+    }
+  ],
+  "transport": "RECORD TRANSPORT: single fresh session of the shared worker",
+  "launch_template": "methods/templates/solo.md",
+  "internal_review": {
+    "enabled": false,
+    "reviewer_role": null
+  },
+  "adapter": null,
+  "budgets": {
+    "max_workers": {
+      "limit": 1,
+      "enforcement": "unenforced"
+    },
+    "max_attempts": {
+      "limit": null,
+      "enforcement": "unenforced"
+    },
+    "max_minutes": {
+      "limit": null,
+      "enforcement": "unenforced"
+    },
+    "max_tokens": {
+      "limit": null,
+      "enforcement": "unavailable"
+    },
+    "max_cost_usd": {
+      "limit": null,
+      "enforcement": "unavailable"
+    }
+  },
+  "notes": "Internal-reviewer ablation arm. The two reviewed arms use the identical reviewer (one recorded value); the unreviewed arms are otherwise the same setup with the reviewer node removed. The external evaluator is unaffected and stays separate."
+}
