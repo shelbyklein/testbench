@@ -32,3 +32,4 @@ blocked or unfinished task is a valid experimental result; report it honestly.
 This file describes a method, not a mechanism to select models or dispatch agents. The operator must
 launch the recorded models and settings in their own tools. If the setup is unconfigured, configure it
 before starting.
+\n\nBudget limits labeled `enforced` in the setup above are enforced only when this method is executed through the bench's workflow adapter. If you launch it manually from this file, the bench enforces none of them; record that in the run notes.\n

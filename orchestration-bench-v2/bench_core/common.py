@@ -81,6 +81,10 @@ def total(measurements):
 @contextlib.contextmanager
 def experiment_lock(exp_dir):
     """Serialize experiment.json writers across the operator and review processes."""
+    marker = Path(exp_dir) / 'experiment.json'
+    if marker.exists() and read(marker).get('format') is None:
+        yield  # v1 experiment: read-only, and v2 never writes into its directory, not even a lock
+        return
     with (Path(exp_dir) / '.controller.lock').open('a') as handle:
         fcntl.flock(handle, fcntl.LOCK_EX)
         try:

@@ -427,6 +427,10 @@ def trace_view(exp, rid):
 
 def comparison(exp):
     data = sync_reviews(exp, load(exp)); store = trace_store(exp); traced = set(store.runs())
+    if not is_v1(data):
+        for run in data['runs']:
+            for phase, details in run['phases'].items():
+                details['reviewCurrent'] = review_is_current(exp, data, run, phase)
     reports = {run['id']: metrics_module.analyze(store, run) for run in data['runs'] if run['id'] in traced}
     result = metrics_module.compare(data, reports)
     result['operatorMetrics'] = {run['id']: run.get('metrics') or {} for run in data['runs']}
@@ -615,7 +619,13 @@ def main(argv=None):
         elif args.cmd == 'blind':
             from bench_core import review_projection
             load_writable(exp); out = args.out or exp / 'blind' / args.phase
-            review_projection.export(exp, args.phase, out); print(f'Sanitized reviewer packages: {out}')
+            review_projection.export(exp, args.phase, out)
+            found = review_projection.scan(out, review_projection.forbidden_terms(exp))
+            leaks = [item for item in found if item['kind'] == 'leak']
+            for item in found:
+                print(f'{item["kind"].upper()}: {item["term"]!r} in {item["where"]}', file=sys.stderr)
+            require(not leaks, f'{len(leaks)} identity leak(s) in {out}. Do not hand these packages to a reviewer.')
+            print(f'Sanitized reviewer packages: {out} (identity scan: 0 leaks, {len(found)} residual cue(s) in submitted source)')
         elif args.cmd == 'export': export(exp, args.out)
         elif args.cmd == 'serve': serve(exp, args.port, args.open)
         elif args.cmd == 'serve-review':

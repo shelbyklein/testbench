@@ -325,6 +325,17 @@ def run_grader(scenario, candidate_dir, out_json, root=None):
     if actual != expected:
         raise ValueError(f'Grader check IDs do not match the scenario contract. '
                          f'Missing: {sorted(expected - actual)}; unexpected: {sorted(actual - expected)}')
+    statuses = [check.get('status') for check in report['checks']]
+    if len(statuses) != len(expected):
+        raise ValueError('Grader reported a check ID more than once')
+    if any(status not in ('pass', 'fail') for status in statuses):
+        raise ValueError(f'Grader reported a check status other than pass/fail: {sorted(set(map(str, statuses)))}')
+    claimed = (report.get('passed'), report.get('total'), report.get('allPassed'))
+    report['passed'] = sum(status == 'pass' for status in statuses)   # recomputed; the grader's own
+    report['total'] = len(statuses)                                  # arithmetic is never trusted
+    report['allPassed'] = report['passed'] == report['total'] and process.returncode == 0
+    if claimed != (report['passed'], report['total'], report['passed'] == report['total']):
+        report['arithmeticMismatch'] = {'claimed': list(claimed), 'note': 'Grader totals disagreed with its checks; recomputed.'}
     return report, {'exitCode': process.returncode, 'stdout': process.stdout[-20000:],
                     'stderr': process.stderr[-10000:]}
 

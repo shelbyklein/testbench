@@ -197,6 +197,10 @@ def policy_hashes(root, methods, scenarios):
             candidate = root / token
             if candidate.is_file():
                 files.add(candidate)
+        for private in scenario.get('private') or []:
+            folder = root / private
+            files.update(p for p in folder.rglob('*')
+                         if p.is_file() and not any(x in common.EXCLUDED for x in p.relative_to(folder).parts))
         source = root / scenario['participant']['source']
         files.update(p for p in source.rglob('*')
                      if p.is_file() and not any(x in common.EXCLUDED for x in p.relative_to(source).parts))

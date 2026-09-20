@@ -232,6 +232,7 @@ def analyze(store, run):
         'join': {'expected': list(expected), 'status': dict(joined), 'joinOk': joined.join_ok,
                  'missing': missing, 'failed': failed,
                  'skipped': [n for n, s in joined.items() if s == 'skipped'],
+                 'forcedSkips': list(joined.forced_skips),
                  'running': [n for n, s in joined.items() if s == 'running']},
         'graphs': {'declared': declared, 'observed': observed,
                    'declaredOnly': declared_only, 'observedOnly': observed_only,
@@ -347,12 +348,13 @@ def _phase_outcome(run, phase):
     data = (run.get('phases') or {}).get(phase) or {}
     evaluation = data.get('evaluation')
     accepted = evaluation.get('allPassed') if isinstance(evaluation, dict) else None
-    defects = ((data.get('review') or {}).get('defects')) or []
+    review = None if data.get('reviewCurrent') is False else data.get('review')  # stale reviews judged other code
+    defects = ((review or {}).get('defects')) or []
     serious = [d for d in defects if str(d.get('severity', '')).lower() in SERIOUS]
     return {'accepted': accepted if isinstance(accepted, bool) else None,
             'evaluated': isinstance(evaluation, dict) and 'allPassed' in evaluation,
             'defects': len(defects), 'seriousDefects': len(serious),
-            'reviewed': bool(data.get('review'))}
+            'reviewed': bool(review), 'staleReview': data.get('reviewCurrent') is False}
 
 
 def compare(experiment, reports):

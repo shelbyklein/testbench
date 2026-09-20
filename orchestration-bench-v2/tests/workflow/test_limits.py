@@ -82,6 +82,17 @@ class AttemptCapTest(unittest.TestCase):
             self.assertTrue(canceled)
             self.assertFalse(result['joinOk'])
 
+    def test_the_attempt_budget_is_global_across_a_restart_with_nothing_reusable(self):
+        # Review finding: a second run() on the same workspace used to get a fresh budget.
+        with tempfile.TemporaryDirectory() as workspace:
+            workflow = fixtures.flat_workers(2, max_attempts_per_node=5)
+            spent = []
+            for _ in range(2):
+                executor = adapter.FakeExecutor(behaviors={f'worker-{i}': 'fail_times:9' for i in range(2)})
+                adapter.run(workflow, executor, fixtures.limits(max_attempts_total=3, max_concurrency=1), [], workspace)
+                spent.append(len(executor.executed))
+            self.assertEqual(sum(spent), 3, spent)
+
     def test_retries_are_allowed_within_the_budget(self):
         with tempfile.TemporaryDirectory() as workspace:
             workflow = fixtures.flat_workers(1, max_attempts_per_node=3)

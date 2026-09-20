@@ -26,7 +26,7 @@ USAGE_KEYS = ('inputTokens', 'outputTokens', 'costUSD', 'durationSeconds')
 REQUIRED = ('schema', 'eventId', 'runId', 'nodeId', 'attempt', 'role', 'type', 'timestamp', 'status')
 
 
-class TraceConflict(Exception):
+class TraceConflict(ValueError):
     """Two events share an eventId but disagree on their payload."""
 
 
@@ -35,11 +35,16 @@ class ImporterError(Exception):
 
 
 class JoinResult(dict):
-    """`{nodeId: status}` mapping; `join_ok` is true only when every node completed or was skipped."""
+    """`{nodeId: status}` mapping; `join_ok` is true only when every node completed or was
+    *deliberately* skipped. A node skipped because a limit cut it or a dependency did not
+    complete (`payload.forced`) is accounted for, but it is not a successful join."""
+
+    forced_skips = ()
 
     @property
     def join_ok(self):
-        return bool(self) and all(v in ('completed', 'skipped') for v in self.values())
+        return (bool(self) and all(v in ('completed', 'skipped') for v in self.values())
+                and not self.forced_skips)
 
 
 def blank_event():
@@ -217,8 +222,10 @@ class TraceStore:
     def join(self, expected_node_ids, run_id=None):
         """Account for every expected node; a failed or missing node never becomes a success."""
         events = self.events(run_id)
-        started, terminal = set(), {}
+        started, terminal, forced = set(), {}, set()
         for event in events:
+            if event['type'] == 'node_skipped' and (event.get('payload') or {}).get('forced'):
+                forced.add(event['nodeId'])
             if event['type'] == 'node_started':
                 started.add(event['nodeId'])
             status = TERMINAL_TYPES.get(event['type'])
@@ -238,6 +245,7 @@ class TraceStore:
                 result[node_id] = 'running'
             else:
                 result[node_id] = 'missing'
+        result.forced_skips = sorted(n for n in forced if result.get(n) == 'skipped')
         return result
 
     # -- lineage ---------------------------------------------------------

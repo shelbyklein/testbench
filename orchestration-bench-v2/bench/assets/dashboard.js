@@ -535,7 +535,8 @@ function renderTrace() {
     + '<dt>Edges that differ</dt><dd>' + ((graphs.edgeDifferences || []).length
       ? '<span class="mono">' + esc(graphs.edgeDifferences.map((e) => e.join(' → ')).join('; ')) + '</span>' : 'none') + '</dd>'
     + '<dt>Deviated from the declared plan</dt><dd>' + (graphs.deviated ? pill('yes', 'bad') : pill('no', 'ok')) + '</dd>'
-    + '<dt>Join</dt><dd>' + (join.joinOk ? pill('all nodes accounted for', 'ok') : pill('join incomplete', 'bad')) + '</dd>'
+    + '<dt>Join</dt><dd>' + (join.joinOk ? pill('all nodes completed or deliberately skipped', 'ok') : pill('join incomplete', 'bad'))
+      + ((join.forcedSkips || []).length ? ' <span class="mono">' + esc(join.forcedSkips.join(', ')) + '</span> skipped because a limit or a failed dependency stopped them' : '') + '</dd>'
     + '</dl></div>';
 
   const timeline = (trace.timeline || []).map((event) => {
@@ -728,11 +729,11 @@ function resourcePanel(comparison) {
     if (!run || !trace || !trace.report) return;
     const bucket = perRole[run.method] || (perRole[run.method] = {});
     Object.entries(trace.report.roles || {}).forEach(([role, usage]) => {
-      const slot = bucket[role] || (bucket[role] = { value: 0, complete: true, unknownCount: 0, unit: 'tokens', source: 'traces' });
+      const slot = bucket[role] || (bucket[role] = { value: null, complete: true, unknownCount: 0, unit: 'tokens', source: 'traces' });
       const tokens = usage.inputTokens || {};
       if (tokens.value === null || tokens.value === undefined) {
         slot.complete = false; slot.unknownCount += 1;
-      } else { slot.value += tokens.value; }
+      } else { slot.value = (slot.value === null ? 0 : slot.value) + tokens.value; }
       if (tokens.complete === false) { slot.complete = false; slot.unknownCount += (tokens.unknownCount || 0); }
     });
   });

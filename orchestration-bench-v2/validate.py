@@ -188,7 +188,7 @@ def lifecycle():
 def suite(name, skip_browser):
     folder = ROOT / 'tests' / name
     if not folder.is_dir():
-        return {'suite': name, 'status': 'absent'}
+        return {'suite': name, 'status': 'FAILED', 'summary': 'suite directory is missing', 'output': None}
     env = dict(__import__('os').environ, OB2_SKIP_BROWSER='1') if skip_browser else None
     started = time.time()
     result = subprocess.run([sys.executable, '-m', 'unittest', 'discover', '-s', f'tests/{name}', '-t', '.', '-p', 'test_*.py'],
@@ -227,7 +227,7 @@ def main():
     report['v1Unchanged'] = v1_unchanged()
     failed = (bool(report['registryErrors']) or any(s['status'] == 'FAILED' for s in report['suites'])
               or 'failed' in report['calibration'].values() or report['lifecycle']['status'] != 'ok'
-              or report['v1Unchanged']['status'] == 'FAILED' or any(report['readiness'].values()) and False)
+              or report['v1Unchanged']['status'] == 'FAILED')
     report['result'] = 'FAILED' if failed else 'ok'
     common.write(OUT / 'validation-report.json', report)
     for item in report['suites']:

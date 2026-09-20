@@ -1026,7 +1026,7 @@ def run(workflow, executor, limits, trace_sink, workspace, scenario=None, run_id
 
     # -- shared run state ------------------------------------------------------
     lock = threading.Lock()
-    attempts_used = int(state.data.get('attemptsUsed') or 0) if reused else 0
+    attempts_used = int(state.data.get('attemptsUsed') or 0)  # global across restarts, reuse or not
     live = 0
     peak = 0
     outputs, verdicts, node_status = [], [], {}
@@ -1152,7 +1152,7 @@ def run(workflow, executor, limits, trace_sink, workspace, scenario=None, run_id
         node_status[node_id] = 'skipped'
         emitter.emit(by_id[node_id], 'node_skipped', status='unknown',
                      source_revision=source_revision,
-                     payload={'reason': 'max_workers limit', 'limit': 'max_workers',
+                     payload={'reason': 'max_workers limit', 'forced': True, 'limit': 'max_workers',
                               'limitValue': limits.max_workers})
 
     pool = _futures.ThreadPoolExecutor(max_workers=limits.max_concurrency,
@@ -1168,7 +1168,7 @@ def run(workflow, executor, limits, trace_sink, workspace, scenario=None, run_id
                     node_status[node_id] = 'skipped'
                     emitter.emit(by_id[node_id], 'node_skipped', status='unknown',
                                  source_revision=source_revision,
-                                 payload={'reason': 'a dependency did not complete'})
+                                 payload={'reason': 'a dependency did not complete', 'forced': True})
                 break
 
             futures = {}
