@@ -260,7 +260,7 @@
     {
       "name": "desktop: a review submits from the keyboard",
       "ok": true,
-      "detail": "Review saved for B-8F0733."
+      "detail": "Review saved for B-111128."
     },
     {
       "name": "desktop: review page logged no console error",
@@ -555,7 +555,7 @@
     {
       "name": "mobile: a review submits from the keyboard",
       "ok": true,
-      "detail": "Review saved for B-8F0733."
+      "detail": "Review saved for B-111128."
     },
     {
       "name": "mobile: review page logged no console error",
