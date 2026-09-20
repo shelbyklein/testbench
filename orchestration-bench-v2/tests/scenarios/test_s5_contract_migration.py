@@ -22,7 +22,8 @@ class CalibrationTest(unittest.TestCase):
         self.assertEqual(report['status'], 'ok', report['problems'])
         self.assertEqual([f['id'] for f in report['known_bad']],
                          ['single-consumer-pass', 'partial-migration', 'data-loss',
-                          'contract-regression'])
+                          'contract-regression', 'report-forgery', 'mid-import-exit',
+                          'fake-ipc-result'])
         for fixture in report['known_bad']:
             self.assertTrue(fixture['detected'], fixture)
 

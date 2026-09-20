@@ -1,0 +1,9 @@
+{
+  "name": "fieldnotes-resumable-publish",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Fieldnotes bulk publish job: saved notes to an append-only outbox.",
+  "scripts": {
+    "test": "node --test tests/smoke.test.mjs"
+  }
+}

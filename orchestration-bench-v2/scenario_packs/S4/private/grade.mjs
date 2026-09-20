@@ -1,23 +1,61 @@
 // S4 breadth-audit grader.  CLI: node grade.mjs <candidate_dir> <output.json>
 //
-// Deterministic and offline. Nothing is written into the candidate directory: the only
-// thing read from it is FINDINGS.json, and every reproduction is executed against the
-// frozen modules shipped with this pack, never against the candidate's copy. That makes
-// the grade independent of any edit a candidate may have made to the modules it was told
-// to leave alone, and it makes two runs on the same submission identical.
+// Deterministic and offline. Nothing is written into the candidate directory: the only thing
+// read from it is FINDINGS.json, and every reproduction is executed against the frozen modules
+// shipped with this pack, never against the candidate's copy. That makes the grade independent
+// of any edit a candidate may have made to the modules it was told to leave alone, and it makes
+// two runs on the same submission identical.
+//
+// MODULE ALLOW-LIST (review finding F2).
+// `reproduction.module` is submission-controlled and used to be joined onto the modules
+// directory with `path.join`, so `"../../../../tmp/x/evil"` escaped it and the grader imported
+// and executed an arbitrary file. The name is now checked against the exact list of frozen
+// module basenames read from that directory, and the resolved path must sit directly inside
+// it. Anything else is a schema error: the finding names a module that does not exist, which
+// is decidable without importing anything at all. `reproduction.export` is checked against what
+// the named module really exports, and a name that is not there reproduces nothing.
+// `reproduction.args` are plain JSON, re-serialised here and parsed in the worker with no
+// reviver, so they are data and cannot smuggle code.
+//
+// SUPERVISOR / WORKER SPLIT (review finding F1).
+// This process never imports a module in order to run a reproduction. It forks
+// `repro-worker.mjs`, which imports the frozen modules and executes the validated
+// reproductions with submission-supplied arguments, and reports each outcome over Node IPC
+// authenticated with a per-run random nonce delivered as the supervisor's first IPC message.
+// Every check — A1…A8 — is then computed HERE from this grader's own inventory and thresholds.
+// A reproduction that did not come back authenticated counts as demonstrating nothing, and the
+// fact is recorded in `details.tamperSignals`. The exit code is derived only from this report.
+//
+// Honest about the residual: this defends the GRADE against forgery and early-exit tricks. It
+// is not a sandbox — the worker runs with the user's OS permissions.
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import { fileURLToPath, pathToFileURL } from 'node:url';
-import { isDeepStrictEqual } from 'node:util';
+import { fileURLToPath } from 'node:url';
 
-import { oracleFor } from './oracles.mjs';
 import { aggregate } from './aggregate.mjs';
+import {
+  NO_RESULT, census, censusDiff, observeOutput, rebuildReport, runWorker, writeReport,
+} from './supervisor.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const MODULES = path.join(HERE, '..', 'participant', 'src');
+const WORKER = path.join(HERE, 'repro-worker.mjs');
 const INVENTORY = JSON.parse(fs.readFileSync(path.join(HERE, 'inventory.json'), 'utf8'));
 const SEVERITIES = new Set(['critical', 'major', 'minor']);
+const WORKER_TIMEOUT_MS = 60000;
+
+export const CHECKS = [
+  { id: 'A1', description: 'FINDINGS.json is present, schema-valid, non-empty and uses unique stable IDs' },
+  { id: 'A2', description: 'Recall: every seeded defect is demonstrated by at least one reproducing finding' },
+  { id: 'A3', description: 'Precision: every reported finding reproduces a real defect' },
+  { id: 'A4', description: 'De-duplication: no two findings claim the same underlying defect' },
+  { id: 'A5', description: 'Severity accuracy: each demonstrated defect is rated at its actual effect' },
+  { id: 'A6', description: `Module coverage: demonstrated defects span at least ${INVENTORY.thresholds.minModuleCoverage} modules` },
+  { id: 'A7', description: `Signal: at least ${Math.round(INVENTORY.thresholds.minReproducingRatio * 100)}% of reported findings reproduce a defect` },
+  { id: 'A8', description: 'Resolution integrity: every finding is joined to its verdict by stable ID and source revision' },
+];
 
 const [candidateArg, outArg] = process.argv.slice(2);
 if (!candidateArg || !outArg) {
@@ -25,14 +63,30 @@ if (!candidateArg || !outArg) {
   process.exit(2);
 }
 const candidate = path.resolve(candidateArg);
+const outPath = path.resolve(outArg);
 
 const scrub = (value) => {
-  const text = typeof value === 'string' ? value : JSON.stringify(value) ?? String(value);
+  const text = typeof value === 'string' ? value : (JSON.stringify(value) ?? String(value));
   return text.split(candidate).join('<submission>').split(HERE).join('<grader>');
 };
 const clip = (text, limit = 400) => (text.length > limit ? `${text.slice(0, limit)}…` : text);
 
-// ---------------------------------------------------------------- source revision
+// ---------------------------------------------------------------- the frozen modules
+
+/** The exact names of the modules shipped in this pack. The only importable set, ever. */
+function frozenModuleNames() {
+  return new Set(fs.readdirSync(MODULES)
+    .filter((name) => name.endsWith('.mjs'))
+    .map((name) => name.slice(0, -4)));
+}
+const ALLOWED_MODULES = frozenModuleNames();
+
+/** A submission-supplied module name is usable only if it is on the list AND stays put. */
+function moduleIsAllowed(name) {
+  if (typeof name !== 'string' || !ALLOWED_MODULES.has(name)) return false;
+  const resolved = path.resolve(MODULES, `${name}.mjs`);
+  return path.dirname(resolved) === path.resolve(MODULES) && fs.existsSync(resolved);
+}
 
 function sourceRevision() {
   const names = fs.readdirSync(MODULES).filter((n) => n.endsWith('.mjs')).sort();
@@ -53,13 +107,35 @@ function readFindings() {
   if (!fs.existsSync(file)) return { error: 'FINDINGS.json is missing from the submission root.' };
   let parsed;
   try {
-    parsed = JSON.parse(fs.readFileSync(file, 'utf8'));
+    parsed = JSON.parse(fs.readFileSync(file, 'utf8'));   // plain JSON, no reviver
   } catch (error) {
     return { error: `FINDINGS.json is not valid JSON: ${error.message}` };
   }
   const findings = Array.isArray(parsed) ? parsed : parsed?.findings;
   if (!Array.isArray(findings)) return { error: 'FINDINGS.json must hold a "findings" array.' };
   return { findings };
+}
+
+/**
+ * Arguments are data. Anything that is not a JSON value is dropped, and the three keys that
+ * are a route to a prototype are refused, so nothing a submission writes can become code.
+ */
+function plainJson(value, depth = 0) {
+  if (depth > 12) return null;
+  if (value === null) return null;
+  const type = typeof value;
+  if (type === 'string' || type === 'boolean') return value;
+  if (type === 'number') return Number.isFinite(value) ? value : null;
+  if (Array.isArray(value)) return value.map((item) => plainJson(item, depth + 1));
+  if (type === 'object') {
+    const out = {};
+    for (const key of Object.keys(value)) {
+      if (key === '__proto__' || key === 'constructor' || key === 'prototype') continue;
+      out[key] = plainJson(value[key], depth + 1);
+    }
+    return out;
+  }
+  return null;   // functions, symbols, undefined: not expressible in JSON, so never present
 }
 
 function schemaProblems(findings) {
@@ -89,6 +165,11 @@ function schemaProblems(findings) {
     } else {
       if (typeof repro.module !== 'string' || !repro.module.trim()) {
         problems.push(`${where}.reproduction: "module" must be a non-empty string`);
+      } else if (!moduleIsAllowed(repro.module)) {
+        // Review finding F2: the only names that may ever reach an import are these.
+        problems.push(`${where}.reproduction: "module" must name one of the modules in src/ ` +
+                      `(${[...ALLOWED_MODULES].sort().join(', ')}); ` +
+                      `${JSON.stringify(repro.module)} is not one of them`);
       }
       if (typeof repro.export !== 'string' || !repro.export.trim()) {
         problems.push(`${where}.reproduction: "export" must be a non-empty string`);
@@ -101,97 +182,88 @@ function schemaProblems(findings) {
   return problems;
 }
 
-// ---------------------------------------------------------------- reproduction
-
-const loaded = new Map();
-async function loadModule(name) {
-  if (!loaded.has(name)) {
-    const file = path.join(MODULES, `${name}.mjs`);
-    if (!fs.existsSync(file)) {
-      loaded.set(name, null);
-    } else {
-      loaded.set(name, await import(pathToFileURL(file).href));
-    }
-  }
-  return loaded.get(name);
-}
-
-function invoke(fn, args) {
-  try {
-    return { ok: true, value: fn(...args) };
-  } catch (error) {
-    return { ok: false, thrown: `${error?.name ?? 'Error'}: ${error?.message ?? error}` };
-  }
-}
-
-function sameOutcome(a, b) {
-  if (a.ok !== b.ok) return false;
-  return a.ok ? isDeepStrictEqual(a.value, b.value) : a.thrown === b.thrown;
-}
-
-const defectByKey = new Map(INVENTORY.defects.map((d) => [`${d.module}.${d.export}`, d]));
-
-async function reproduce(finding) {
-  const repro = finding?.reproduction ?? {};
-  const moduleName = String(repro.module ?? '');
-  const exportName = String(repro.export ?? '');
-  const args = Array.isArray(repro.args) ? repro.args : [];
-  const outcome = { findingId: finding?.id ?? null, reproduced: false, defectId: null, reason: null };
-
-  const mod = await loadModule(moduleName);
-  if (!mod) {
-    outcome.reason = `no module "${moduleName}" in src/`;
-    return outcome;
-  }
-  const fn = mod[exportName];
-  if (typeof fn !== 'function') {
-    outcome.reason = `"${moduleName}" has no exported function "${exportName}"`;
-    return outcome;
-  }
-  const oracle = oracleFor(moduleName, exportName);
-  const actual = invoke(fn, args);
-  if (!oracle) {
-    outcome.reason = `${moduleName}.${exportName} behaved as specified for these arguments`;
-    outcome.actual = clip(scrub(actual.ok ? actual.value : actual.thrown));
-    return outcome;
-  }
-  const expected = invoke(oracle, args);
-  if (sameOutcome(actual, expected)) {
-    outcome.reason = `${moduleName}.${exportName} returned the specified result for these arguments`;
-    outcome.actual = clip(scrub(actual.ok ? actual.value : actual.thrown));
-    return outcome;
-  }
-  outcome.reproduced = true;
-  outcome.defectId = defectByKey.get(`${moduleName}.${exportName}`)?.id ?? null;
-  outcome.actual = clip(scrub(actual.ok ? actual.value : actual.thrown));
-  outcome.expected = clip(scrub(expected.ok ? expected.value : expected.thrown));
-  outcome.reason = `${moduleName}.${exportName} produced ${outcome.actual} where the specification requires ${outcome.expected}`;
-  return outcome;
-}
-
 // ---------------------------------------------------------------- grading
 
 async function main() {
+  const tamperSignals = [];
+  const outBefore = observeOutput(outPath);
+  const candidateBefore = census(candidate);
   const revision = sourceRevision();
-  const checks = [];
-  const add = (id, description, passed, evidence) =>
-    checks.push({ id, description, status: passed ? 'pass' : 'fail', evidence: clip(scrub(evidence)) });
 
   const read = readFindings();
   const findings = read.findings ?? [];
   const problems = read.error ? [read.error] : schemaProblems(findings);
   const nonEmpty = findings.length > 0;
   const schemaOK = problems.length === 0 && nonEmpty;
-  add('A1', 'FINDINGS.json is present, schema-valid, non-empty and uses unique stable IDs',
-      schemaOK,
-      schemaOK ? `${findings.length} findings, all schema-valid; source revision ${revision}`
-               : (problems.length ? problems.slice(0, 6).join(' | ') : 'FINDINGS.json contains no findings'));
 
-  const outcomes = [];
-  if (schemaOK) {
-    for (const finding of findings) outcomes.push(await reproduce(finding));
+  // The reproductions, validated and reduced to plain data before anything executes them.
+  const requests = schemaOK ? findings.map((finding, seq) => ({
+    seq,
+    module: finding.reproduction.module,
+    export: finding.reproduction.export,
+    args: plainJson(finding.reproduction.args),
+  })) : [];
+
+  const outcomes = findings.map((finding) => ({
+    findingId: finding?.id ?? null, reproduced: false, defectId: null,
+    reason: schemaOK ? NO_RESULT : 'the submission is not schema-valid; nothing was executed',
+  }));
+
+  const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'ob2-s4-'));
+  if (requests.length) {
+    const reprosFile = path.join(scratch, 'reproductions.json');
+    fs.writeFileSync(reprosFile, JSON.stringify(requests));
+    const run = await runWorker({
+      worker: WORKER,
+      args: [scratch, reprosFile],
+      cwd: scratch,
+      timeoutMs: WORKER_TIMEOUT_MS,
+      label: 'reproductions',
+    });
+    for (const signal of run.signals) tamperSignals.push(clip(scrub(signal), 300));
+
+    const bySeq = new Map();
+    for (const message of run.messages) {
+      if (!message || message.type !== 'repro') continue;
+      if (!Number.isInteger(message.seq) || message.seq < 0 || message.seq >= requests.length) {
+        tamperSignals.push(`the worker reported an outcome for an unknown reproduction index ${String(message.seq)}`);
+        continue;
+      }
+      if (bySeq.has(message.seq)) {
+        tamperSignals.push(`the worker reported reproduction ${message.seq} more than once; duplicates are refused`);
+        continue;
+      }
+      bySeq.set(message.seq, message.outcome);
+    }
+    for (const message of run.messages) {
+      if (message?.type !== 'done') continue;
+      for (const note of Array.isArray(message.tamper) ? message.tamper : []) {
+        tamperSignals.push(`${clip(scrub(String(note)), 200)} (reported by the worker)`);
+      }
+    }
+    for (const { seq } of requests) {
+      const got = bySeq.get(seq);
+      if (!got || typeof got !== 'object') {
+        tamperSignals.push(`reproduction ${seq} (${findings[seq]?.id ?? 'unnamed'}) came back with ` +
+                           'no authenticated result and demonstrates nothing');
+        continue;
+      }
+      const defectKey = `${requests[seq].module}.${requests[seq].export}`;
+      outcomes[seq] = {
+        findingId: findings[seq]?.id ?? null,
+        reproduced: got.reproduced === true,
+        defectId: got.reproduced === true
+          ? (INVENTORY.defects.find((d) => `${d.module}.${d.export}` === defectKey)?.id ?? null)
+          : null,
+        reason: clip(scrub(String(got.reason ?? ''))),
+        ...(got.actual === undefined ? {} : { actual: clip(scrub(String(got.actual))) }),
+        ...(got.expected === undefined ? {} : { expected: clip(scrub(String(got.expected))) }),
+      };
+    }
   }
+  fs.rmSync(scratch, { recursive: true, force: true });
 
+  // ------------------------------------------------------------ checks, computed here
   const reproduction = Object.fromEntries(outcomes.map((o) => [o.findingId, o]));
   const verdicts = outcomes.map((o, index) => ({
     findingId: o.findingId,
@@ -217,24 +289,7 @@ async function main() {
   const coveredModules = new Set(reproducing
     .map((o) => INVENTORY.defects.find((d) => d.id === o.defectId)?.module)
     .filter(Boolean));
-
   const thresholds = INVENTORY.thresholds;
-
-  add('A2', 'Recall: every seeded defect is demonstrated by at least one reproducing finding',
-      schemaOK && missing.length === 0,
-      missing.length ? `not demonstrated: ${missing.join(', ')} (found ${foundDefectIds.length}/${INVENTORY.defects.length})`
-                     : `all ${INVENTORY.defects.length} seeded defects demonstrated`);
-
-  add('A3', 'Precision: every reported finding reproduces a real defect',
-      schemaOK && falsePositives.length <= thresholds.maxFalsePositives,
-      falsePositives.length
-        ? `${falsePositives.length} finding(s) reproduce nothing: ` +
-          falsePositives.slice(0, 4).map((o) => `${o.findingId} (${o.reason})`).join(' | ')
-        : 'no false positives');
-
-  add('A4', 'De-duplication: no two findings claim the same underlying defect',
-      schemaOK && duplicated.length <= thresholds.maxDuplicatedDefects,
-      duplicated.length ? `duplicate claims: ${duplicated.join(' | ')}` : 'each demonstrated defect is claimed once');
 
   const severityErrors = [];
   for (const [defectId, ids] of byDefect) {
@@ -244,18 +299,6 @@ async function main() {
       if (claimed !== expected) severityErrors.push(`${id}: claimed ${claimed}, effect is ${expected}`);
     }
   }
-  add('A5', 'Severity accuracy: each demonstrated defect is rated at its actual effect',
-      schemaOK && severityErrors.length === 0,
-      severityErrors.length ? severityErrors.slice(0, 5).join(' | ') : 'every severity matches');
-
-  add('A6', `Module coverage: demonstrated defects span at least ${thresholds.minModuleCoverage} modules`,
-      schemaOK && coveredModules.size >= thresholds.minModuleCoverage,
-      `covered modules: ${[...coveredModules].sort().join(', ') || 'none'} (${coveredModules.size})`);
-
-  const ratio = findings.length ? reproducing.length / findings.length : 0;
-  add('A7', `Signal: at least ${Math.round(thresholds.minReproducingRatio * 100)}% of reported findings reproduce a defect`,
-      schemaOK && ratio >= thresholds.minReproducingRatio,
-      `${reproducing.length}/${findings.length} findings reproduce a defect (${ratio.toFixed(2)}); volume alone earns nothing`);
 
   const joinProblems = [];
   if (joined.unresolved.length) joinProblems.push(`unresolved findings: ${joined.unresolved.join(', ')}`);
@@ -265,38 +308,65 @@ async function main() {
   if (joined.resolved.length !== findings.length) {
     joinProblems.push(`${joined.resolved.length} of ${findings.length} findings resolved`);
   }
-  add('A8', 'Resolution integrity: every finding is joined to its verdict by stable ID and source revision',
-      schemaOK && joinProblems.length === 0,
+
+  const ratio = findings.length ? reproducing.length / findings.length : 0;
+  const results = new Map();
+  const set = (id, passed, evidence) =>
+    results.set(id, { status: passed ? 'pass' : 'fail', evidence: clip(scrub(evidence)) });
+
+  set('A1', schemaOK,
+      schemaOK ? `${findings.length} findings, all schema-valid; source revision ${revision}`
+               : (problems.length ? problems.slice(0, 6).join(' | ') : 'FINDINGS.json contains no findings'));
+  set('A2', schemaOK && missing.length === 0,
+      missing.length ? `not demonstrated: ${missing.join(', ')} (found ${foundDefectIds.length}/${INVENTORY.defects.length})`
+                     : `all ${INVENTORY.defects.length} seeded defects demonstrated`);
+  set('A3', schemaOK && falsePositives.length <= thresholds.maxFalsePositives,
+      falsePositives.length
+        ? `${falsePositives.length} finding(s) reproduce nothing: ` +
+          falsePositives.slice(0, 4).map((o) => `${o.findingId} (${o.reason})`).join(' | ')
+        : 'no false positives');
+  set('A4', schemaOK && duplicated.length <= thresholds.maxDuplicatedDefects,
+      duplicated.length ? `duplicate claims: ${duplicated.join(' | ')}` : 'each demonstrated defect is claimed once');
+  set('A5', schemaOK && severityErrors.length === 0,
+      severityErrors.length ? severityErrors.slice(0, 5).join(' | ') : 'every severity matches');
+  set('A6', schemaOK && coveredModules.size >= thresholds.minModuleCoverage,
+      `covered modules: ${[...coveredModules].sort().join(', ') || 'none'} (${coveredModules.size})`);
+  set('A7', schemaOK && ratio >= thresholds.minReproducingRatio,
+      `${reproducing.length}/${findings.length} findings reproduce a defect (${ratio.toFixed(2)}); volume alone earns nothing`);
+  set('A8', schemaOK && joinProblems.length === 0,
       joinProblems.length ? joinProblems.join(' | ')
                           : `${joined.resolved.length} findings resolved at ${revision} by ${joined.joinedBy}`);
 
-  const passed = checks.filter((c) => c.status === 'pass').length;
-  const report = {
-    checks,
-    passed,
-    total: checks.length,
-    allPassed: passed === checks.length,
-    details: {
-      sourceRevision: revision,
-      findingCount: findings.length,
-      reproducingCount: reproducing.length,
-      falsePositiveIds: falsePositives.map((o) => o.findingId),
-      defectsFound: foundDefectIds,
-      defectsMissed: missing,
-      duplicateClaims: duplicated,
-      severityErrors,
-      coveredModules: [...coveredModules].sort(),
-      aggregation: {
-        joinedBy: joined.joinedBy,
-        accepted: joined.accepted,
-        rejected: joined.rejected,
-        unresolved: joined.unresolved,
-        stale: joined.stale,
-        duplicateVerdicts: joined.duplicateVerdicts,
-      },
+  const touched = censusDiff(candidateBefore, census(candidate));
+  if (touched.length) {
+    tamperSignals.push(`the candidate directory was written to during grading: ${touched.slice(0, 6).join(', ')}`);
+  }
+
+  const report = rebuildReport(CHECKS, results, {
+    sourceRevision: revision,
+    findingCount: findings.length,
+    reproducingCount: reproducing.length,
+    falsePositiveIds: falsePositives.map((o) => o.findingId),
+    defectsFound: foundDefectIds,
+    defectsMissed: missing,
+    duplicateClaims: duplicated,
+    severityErrors,
+    coveredModules: [...coveredModules].sort(),
+    allowedModules: [...ALLOWED_MODULES].sort(),
+    aggregation: {
+      joinedBy: joined.joinedBy,
+      accepted: joined.accepted,
+      rejected: joined.rejected,
+      unresolved: joined.unresolved,
+      stale: joined.stale,
+      duplicateVerdicts: joined.duplicateVerdicts,
     },
-  };
-  fs.writeFileSync(outArg, `${JSON.stringify(report, null, 2)}\n`);
+    graderModel: 'supervisor/worker: reproductions run only in a forked worker over an ' +
+                 'allow-listed frozen module, with plain-JSON arguments; every check is ' +
+                 'computed by the supervisor from its own inventory',
+  }, tamperSignals);
+
+  writeReport(outPath, report, tamperSignals, outBefore);
   process.exit(report.allPassed ? 0 : 1);
 }
 

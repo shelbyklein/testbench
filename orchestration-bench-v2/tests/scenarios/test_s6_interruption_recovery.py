@@ -37,7 +37,8 @@ class CalibrationTest(unittest.TestCase):
         self.assertEqual(report['status'], 'ok', report['problems'])
         self.assertEqual([f['id'] for f in report['known_bad']],
                          ['duplicate-effects', 'lost-progress', 'swallowed-failure',
-                          'non-durable-ack'])
+                          'non-durable-ack', 'report-forgery', 'mid-import-exit',
+                          'fake-ipc-result'])
         for fixture in report['known_bad']:
             self.assertTrue(fixture['detected'], fixture)
 
@@ -56,8 +57,10 @@ class CalibrationTest(unittest.TestCase):
         report = support.grade('S6', REFERENCE)
         self.assertEqual(report['details']['milestone'], MILESTONE)
         self.assertIn('durably', report['details']['milestoneDefinition'])
-        grader = (PACK / 'private' / 'grade.mjs').read_text()
-        self.assertIn('SEMANTIC milestone', grader)
+        # The fault wrapper moved into the forked worker with the supervisor/worker split.
+        worker = (PACK / 'private' / 'worker.mjs').read_text()
+        self.assertIn('SEMANTIC milestone', worker)
+        self.assertIn('never after N calls', worker)
 
 
 class StartStateTest(unittest.TestCase):
