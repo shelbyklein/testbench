@@ -1,86 +1,69 @@
-# Orchestration Bench
+# Orchestration Bench v2
 
-A local, reusable experiment for comparing **Astra low solo**, **Astra low with a written handoff**, and **Fable actively orchestrating Opus** on identical coding tasks.
+A local bench for one question: **does orchestration produce better work than simply running Astra on low, and when is the gain worth the added effort?**
 
-The bench and nine independent workspaces are prepared. **No participating model has run a benchmark attempt.** Validation of the bench itself is reported separately in VALIDATION.md.
+It gives every candidate setup the same practice tasks in isolated repositories, grades them with the same private checks, puts the results in front of a reviewer who cannot see which setup produced them, and reports quality next to time, tokens, cost and human effort. It never declares a winner for you.
 
-## Open the bench
+**Status:** the bench is built and validated offline. No model comparison has been run; every real experiment ships *prepared but not ready* until you record the actual model roles. Nothing in setup, tests, validation or either server calls a model.
 
-Double-click **Launch Bench.command**, or run:
+Requirements: Python 3.10+, Node 22+, Git, macOS or Linux. No installs, no API keys.
+
+## Check that it works
 
 ```sh
-python3 bench.py serve --open
+python3 validate.py
 ```
 
-Run commands from this folder. Open http://127.0.0.1:4387. Node 22+, Python 3.10+, and Git are required; no package install, accounts, API keys, or publishing are required. The controller uses macOS/Linux file locking. If the port is busy, use `serve --port 4388 --open`.
+Runs every test suite, grader calibration and a complete synthetic lifecycle (prepare → configure → start → capture → grade → blind review → repair → compare → export) with outbound network and provider CLIs blocked. Output lands in `.runtime/validation/` and is labeled synthetic. Add `--skip-browser` if Chrome/Playwright are not available.
 
-## What is ready
+## Run an experiment
 
-| Scenario | Work being tested | First / repair allowance |
+```sh
+python3 bench.py registry                                   # what exists, and what is not ready
+python3 bench.py --experiment .runtime/practical prepare --definition practical-setups
+python3 bench.py --experiment .runtime/practical serve --open      # operator dashboard, port 4388
+python3 bench.py --experiment .runtime/practical serve-review      # separate blind-review server, port 4389
+```
+
+`prepare` creates one isolated Git repository per run and a seeded, counterbalanced schedule. `start` refuses until every method in the experiment is configured with the exact models and settings you will really use (`configure`, or the dashboard). Then, per run: launch the method yourself from the run's `LAUNCH.md` → `capture` → `evaluate` → optional `trace-import` of the session transcript → blind review → optional `repair` → `export`.
+
+Three experiments are defined in `experiments/definitions/`:
+
+| Experiment | Compares | Can establish |
 |---|---|---|
-| S1 · Find only the notes I asked for | Diagnose a contained filtering bug, preserve behavior, verify API/UI | 30 / 15 min |
-| S2 · Bring a notebook across safely | Implement a validated, atomic, persistent import across UI/API/storage | 60 / 20 min |
-| S3 · Make archiving feel recoverable | Implement time-limited undo and make sound interaction decisions | 60 / 20 min |
+| `practical-setups` | Astra low solo · Astra low written handoff · Fable directing Opus · native graph candidate | Which complete setup works best under the recorded conditions |
+| `fixed-worker` | Solo, written plan, active coordination, graph — same worker model and settings | Whether orchestration helps when worker capability is held constant |
+| `internal-review-ablation` | Solo and graph, each with and without the same internal reviewer | Whether a gain comes mainly from extra review |
 
-All three start from the same small Fieldnotes app. Each brief defines exact behavioral anchors and deliberate design latitude. The evaluator has 39 checks across the three scenario suites, including repeated regression checks, plus a separate original smoke suite for every submission. Manual UI/accessibility checklists and a five-dimension rubric cover what the automatic checks cannot prove.
+Still unresolved and deliberately left as `RECORD …` placeholders: the handoff executor, Astra's role in the active setup, and every model/effort for the graph and fixed-worker methods.
 
-## First experiment, step by step
+## Scenarios
 
-1. **Configure methods in the dashboard.** Solo is recorded as Astra/low. Confirm exact versions/settings/runtime for your actual session. The two orchestration templates need their unresolved roles/settings replaced and `configured` set to true. Put `n/a` for unavailable reasoning controls. Specify delegation limits in notes. If the written handoff uses GitHub, record that transport; the bench prepares the local handoff workflow but does not publish issues.
-2. **Select the next run in the displayed balanced order.** Copy its “Start first-attempt clock” command into Terminal. Copy the launch prompt into a fresh agent session opened on that run's workspace. For handoff mode use a planner session, then a fresh executor session as described in the launch prompt. Launch models through your existing tools; the bench does not dispatch them.
-3. **At done or the time limit, stop writes and capture.** Use “Capture first submission,” then “Evaluate first submission.” Refresh the dashboard. The evaluator uses a disposable copy, a fresh data file, and the same independent checks. It does not fix the submission. Keep the evaluator and other workspaces out of the implementer's context.
-4. **Review without method labels.** Capture all first attempts before sharing external feedback when practical. “Export blind packages” creates source/reviewer bundles with randomized labels. Give a fresh reviewer only those folders. Use Blind review mode on the dashboard for your own scoring. Exercise the actual app and save manual results/evidence. Import a separate review with `review --blind LABEL --phase first --file /path/to/review.json`.
-5. **Log effort for every agent.** Cost, tokens, your minutes, and interventions are phase-specific. Leave unavailable measures blank; enter their source. The measured wall clock includes planning and integration. Time limits are recorded, not automatically enforced.
-6. **Optionally run the fixed repair round.** Provide factual feedback about that submission's failures; start its repair clock. Capture/evaluate the repaired result separately. Never rewrite the first attempt. Record only additional repair cost/time in repaired metrics.
-7. **Compare matched submissions and export.** The comparison table follows the selected scenario, repeat, and phase. Record pairwise preference only after individual reviews. Use “Export all results” for JSON and CSV. There is no invented overall score or automatic winner.
+| | Task | What it probes |
+|---|---|---|
+| S1 | Search/filter correctness fix | Control: delegation may only add overhead |
+| S2 | Transactional JSON import | Cross-layer feature work |
+| S3 | Archive with expiring undo | Product and interaction judgment |
+| S4 | Breadth audit of 12 modules | Parallel coverage; precision vs. padding; stable-ID verdict joins |
+| S5 | Shared-contract migration | Coordination across consumers of one contract; integration failures |
+| S6 | Interruption and recovery | Restart without lost data or duplicated effects |
 
-Use `python3 bench.py status` to list the prepared run IDs. The dashboard provides full commands, including absolute paths, so you do not need to construct IDs manually.
+S1–S3 are the v1 scenarios, unchanged. `python3 bench.py calibrate` grades each pack's known-correct reference and deliberately wrong submissions. Private grading assets live under each pack's `private/` (and `evaluator/` for S1–S3) and are never copied into a participant workspace or a review package. That is logical separation, not an OS security boundary: give participants only their assigned workspace.
 
-## Example lifecycle
+## What the numbers mean
 
-Replace RUN_ID with an actual prepared ID:
+- **Unknown stays unknown.** A missing measurement is `null`/"unknown", never 0. Partial sums are marked partial. Requested and effective model settings are separate; effective stays unverified until evidence exists.
+- **Costs are charged to the candidate** — planning, coordination, internal review, integration, retries. Wall time is the union of intervals, not a sum of overlapping ones. Parent totals are never added to their children.
+- **First attempt and repaired result are separate**, and compared only within the same scenario version, environment and repeat.
+- **No composite score, no automatic winner.** Many repeats of one task are not task diversity; the comparison reports them separately.
+- **Synthetic data is labeled** everywhere it appears.
 
-```sh
-python3 bench.py start RUN_ID
-# Run the configured agent(s) in that workspace. Stop writes when done.
-python3 bench.py capture RUN_ID --phase first
-python3 bench.py evaluate RUN_ID --phase first
-python3 bench.py blind --phase first
-# Complete manual review and resource recording in the dashboard.
-python3 bench.py repair RUN_ID
-# Apply feedback using the same configured method within the repair allowance.
-python3 bench.py capture RUN_ID --phase repaired
-python3 bench.py evaluate RUN_ID --phase repaired
-python3 bench.py export
-```
+## The graph candidate
 
-To prepare another experiment without overwriting this pilot:
+`adapters/claude_workflow/` holds one versioned native Claude workflow template, a capability preflight and a bounded offline adapter. Concurrency, worker, attempt and elapsed-time limits are enforced by the bench on the adapter path; token and cost limits are reported as unavailable because the provider offers no reliable control. The live executor fails closed without an explicit run command and passing capability checks, and has never been executed. Read `adapters/claude_workflow/CAPABILITY.md` before a real run: the workflow opt-in also raises reasoning effort, which is a confound, not evidence that orchestration helped.
 
-```sh
-python3 bench.py --experiment experiments/repeat-study prepare --repeats 2
-python3 bench.py --experiment experiments/repeat-study serve --port 4388 --open
-```
+## Layout
 
-Freeze the bench version for each experiment. Code, scenarios, and evaluator hashes are recorded at preparation and checked before start/capture/evaluation. Each phase can be captured/evaluated once. A failed check is a result; correcting an infrastructure problem warrants a documented fresh run, not silent replacement of evidence.
+`bench.py` controller · `validate.py` offline validation · `bench_core/` registry, schedule, experiment, traces, metrics, review projection/server · `adapters/` trace importers and the workflow adapter · `scenario_packs/` · `methods/` · `experiments/definitions/` · `bench/` dashboard and review page · `contracts/CONTRACTS.md` formats and rules · `tests/` · `historical-v1/` v1 validation records (not v2 results).
 
-## Files and separation
-
-- `scenarios/`: exact task briefs and catalog.
-- `seed/`: unsolved starting app. `fixtures/` contains UI import examples. Never use this shared seed as a participant workspace.
-- `methods/defaults.json`: editable templates copied into new experiments; edit a prepared experiment's methods through the dashboard before any of that method's runs start.
-- `evaluator/`: operator-side checks and manual acceptance criteria. Do not provide these files to implementation agents.
-- `docs/PROTOCOL.md`, `docs/RUBRIC.md`, `docs/REVIEWER_PROMPT.md`: run rules and reviewer kit.
-- `experiments/pilot/workspaces/`: nine independent Git repositories with TASK.md and LAUNCH.md.
-- `experiments/pilot/snapshots/`, `receipts/`, `results/`: captured source, hashes, evaluation, and reviews once runs occur.
-- `experiments/pilot/blind/`: reviewer packages after export. Mapping remains in operator-owned experiment.json.
-- `experiments/pilot/events.jsonl`: append-only operational events. Review revisions are retained separately.
-
-Folder separation and the dashboard's blind switch are not OS security boundaries. For strict isolation, expose only the assigned workspace in a separate sandbox; expose only the exported anonymous package to its reviewer. A code style or source comment can still reveal provenance. The reviewer rubric explains when to inspect completion reports.
-
-## Interpreting the result
-
-Accept only when automatic checks, original smoke tests, manual anchors, and evidence-backed review are complete, with no critical/major defect remaining and each rubric dimension at least 2/3. Missing review is pending, not a pass. Keep correctness, completeness, maintainability, UX, and evidence scores separate. A serious defect outweighs polish.
-
-This nine-run pilot gives a first signal about **complete workflow configurations on this synthetic app**. It is not a reliable estimate of all future coding work. Repeat close/surprising comparisons in fresh sessions. To measure orchestration alone, later compare the same implementer with and without orchestration under fixed tools and budgets.
-
-Prefer the simpler baseline when no meaningful quality or intervention benefit repeats. No current winner is known.
+v1 experiments open read-only (`--experiment <v1 dir> status`, `export --out <elsewhere>`); v2 never writes into them.
