@@ -50,27 +50,33 @@
   "manual_checks": [
     {
       "id": "ui-undo",
-      "instruction": "Archive using keyboard, observe clear nonmodal feedback, and undo within 10 seconds. The restored note and useful focus are present."
+      "instruction": "Archive using keyboard, observe clear nonmodal feedback, and undo within 10 seconds. The restored note and useful focus are present.",
+      "description": "Archive using keyboard, observe clear nonmodal feedback, and undo within 10 seconds. The restored note and useful focus are present."
     },
     {
       "id": "ui-expiry",
-      "instruction": "Let the 10-second window expire. Undo is no longer offered as available; no false success message."
+      "instruction": "Let the 10-second window expire. Undo is no longer offered as available; no false success message.",
+      "description": "Let the 10-second window expire. Undo is no longer offered as available; no false success message."
     },
     {
       "id": "ui-refresh",
-      "instruction": "Archive and reload promptly. A working Undo is still available for the remaining time."
+      "instruction": "Archive and reload promptly. A working Undo is still available for the remaining time.",
+      "description": "Archive and reload promptly. A working Undo is still available for the remaining time."
     },
     {
       "id": "ui-latest",
-      "instruction": "Archive two notes rapidly. Feedback and Undo refer to the second; the first remains archived."
+      "instruction": "Archive two notes rapidly. Feedback and Undo refer to the second; the first remains archived.",
+      "description": "Archive two notes rapidly. Feedback and Undo refer to the second; the first remains archived."
     },
     {
       "id": "ui-errors",
-      "instruction": "Fail archive and undo requests separately. Feedback is understandable and view matches confirmed server state."
+      "instruction": "Fail archive and undo requests separately. Feedback is understandable and view matches confirmed server state.",
+      "description": "Fail archive and undo requests separately. Feedback is understandable and view matches confirmed server state."
     },
     {
       "id": "ui-context",
-      "instruction": "Search/folder state is preserved across archive/undo. Exercise at 390px; inspect keyboard access, focus destination, and screen-reader announcement semantics."
+      "instruction": "Search/folder state is preserved across archive/undo. Exercise at 390px; inspect keyboard access, focus destination, and screen-reader announcement semantics.",
+      "description": "Search/folder state is preserved across archive/undo. Exercise at 390px; inspect keyboard access, focus destination, and screen-reader announcement semantics."
     }
   ],
   "notes": "v1 scenario carried over unchanged; brief, seed and evaluator are the v1 files. v1 known-correct fixtures were not shipped in the v1 source tree, so calibration.reference is unknown (null)."

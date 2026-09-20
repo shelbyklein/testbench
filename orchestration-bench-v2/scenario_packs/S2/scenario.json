@@ -53,27 +53,33 @@
   "manual_checks": [
     {
       "id": "ui-import",
-      "instruction": "Import a valid two-note file from the visible control; verify counts, rendered notes, and persistence after reload."
+      "instruction": "Import a valid two-note file from the visible control; verify counts, rendered notes, and persistence after reload.",
+      "description": "Import a valid two-note file from the visible control; verify counts, rendered notes, and persistence after reload."
     },
     {
       "id": "ui-invalid-retry",
-      "instruction": "Try malformed JSON, a valid first entry followed by an invalid entry, then select the same corrected file again. Failure is clear, nothing partially imports, retry works."
+      "instruction": "Try malformed JSON, a valid first entry followed by an invalid entry, then select the same corrected file again. Failure is clear, nothing partially imports, retry works.",
+      "description": "Try malformed JSON, a valid first entry followed by an invalid entry, then select the same corrected file again. Failure is clear, nothing partially imports, retry works."
     },
     {
       "id": "ui-busy",
-      "instruction": "Delay the import response and attempt another submission. Busy feedback is visible and duplicate submission is prevented."
+      "instruction": "Delay the import response and attempt another submission. Busy feedback is visible and duplicate submission is prevented.",
+      "description": "Delay the import response and attempt another submission. Busy feedback is visible and duplicate submission is prevented."
     },
     {
       "id": "ui-network",
-      "instruction": "Abort/fail the import request. Do not show success; keep existing notes/view and allow retry."
+      "instruction": "Abort/fail the import request. Do not show success; keep existing notes/view and allow retry.",
+      "description": "Abort/fail the import request. Do not show success; keep existing notes/view and allow retry."
     },
     {
       "id": "ui-safe-text",
-      "instruction": "Import a title/body containing HTML-like text. It must display as text without creating executable elements."
+      "instruction": "Import a title/body containing HTML-like text. It must display as text without creating executable elements.",
+      "description": "Import a title/body containing HTML-like text. It must display as text without creating executable elements."
     },
     {
       "id": "ui-accessibility",
-      "instruction": "Use import and feedback by keyboard; inspect accessible labels/status announcements and layout at 390px."
+      "instruction": "Use import and feedback by keyboard; inspect accessible labels/status announcements and layout at 390px.",
+      "description": "Use import and feedback by keyboard; inspect accessible labels/status announcements and layout at 390px."
     }
   ],
   "notes": "v1 scenario carried over unchanged; brief, seed and evaluator are the v1 files. v1 known-correct fixtures were not shipped in the v1 source tree, so calibration.reference is unknown (null)."

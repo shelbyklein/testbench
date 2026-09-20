@@ -53,19 +53,23 @@
   "manual_checks": [
     {
       "id": "ui-combination",
-      "instruction": "Select Garden; search lamp; expect zero cards and correct empty/count state."
+      "instruction": "Select Garden; search lamp; expect zero cards and correct empty/count state.",
+      "description": "Select Garden; search lamp; expect zero cards and correct empty/count state."
     },
     {
       "id": "ui-multiword",
-      "instruction": "Clear folder; search small tools; expect only An unfinished thought. Toggle archived and confirm filters still apply."
+      "instruction": "Clear folder; search small tools; expect only An unfinished thought. Toggle archived and confirm filters still apply.",
+      "description": "Clear folder; search small tools; expect only An unfinished thought. Toggle archived and confirm filters still apply."
     },
     {
       "id": "ui-race",
-      "instruction": "Delay an older /api/notes request in browser tooling, issue a newer query, and release responses out of order. Newer results must remain."
+      "instruction": "Delay an older /api/notes request in browser tooling, issue a newer query, and release responses out of order. Newer results must remain.",
+      "description": "Delay an older /api/notes request in browser tooling, issue a newer query, and release responses out of order. Newer results must remain."
     },
     {
       "id": "ui-regression",
-      "instruction": "Exercise keyboard focus, folder/search controls, archive, and 390px layout. No new blocking regression."
+      "instruction": "Exercise keyboard focus, folder/search controls, archive, and 390px layout. No new blocking regression.",
+      "description": "Exercise keyboard focus, folder/search controls, archive, and 390px layout. No new blocking regression."
     }
   ],
   "notes": "v1 scenario carried over unchanged; brief, seed and evaluator are the v1 files. v1 known-correct fixtures were not shipped in the v1 source tree, so calibration.reference is unknown (null)."

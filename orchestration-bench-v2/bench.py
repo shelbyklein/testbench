@@ -8,7 +8,6 @@ import argparse
 import copy
 import csv
 import datetime as dt
-import fcntl
 import functools
 import http.server
 import json
@@ -318,12 +317,18 @@ def sync_reviews(exp, data):
     return data
 
 
-def review_is_current(details):
-    review = details.get('review'); binding = (review or {}).get('binding') or {}
+def review_is_current(exp, data, run, phase):
+    """None = no review; False = the review judged a different submission or evaluator version."""
+    details = run['phases'][phase]; review = details.get('review')
     if not review: return None
-    if not binding: return True
+    version = scenario_for(data, run)['grader']['version']
+    if review.get('label'):  # blind review: bound to the reviewer-visible inventory
+        from bench_core import review_projection
+        return (review.get('submissionHash') == review_projection.submission_hash(exp, run['id'], phase)
+                and review.get('evaluatorVersion') == version)
+    binding = review.get('binding') or {}
     return (binding.get('submissionHash') == details.get('submissionHash')
-            and binding.get('evaluatorVersion') in (None, (details.get('evaluation') or {}).get('graderVersion')))
+            and binding.get('evaluatorVersion') in (None, version))
 
 
 def record_metrics(exp, rid, phase, value):
@@ -399,8 +404,8 @@ def view(exp):
         run['launch'] = launch.read_text() if launch.exists() else None
         run['reviewTemplate'] = blank_review(data, run['scenario'])
         run['hasTrace'] = run['id'] in traced
-        for details in run['phases'].values():
-            current = review_is_current(details)
+        for phase, details in run['phases'].items():
+            current = review_is_current(exp, result, run, phase)
             details['reviewCurrent'] = current
             details['gate'] = ('Review is stale' if current is False
                                else gate(details.get('evaluation'), details.get('review')))
@@ -532,10 +537,8 @@ def serve(exp, port, open_browser):
 def locked(function):
     @functools.wraps(function)
     def call(exp, *args, **kwargs):
-        with LOCK, (exp / '.controller.lock').open('a') as lock:
-            fcntl.flock(lock, fcntl.LOCK_EX)
-            try: return function(exp, *args, **kwargs)
-            finally: fcntl.flock(lock, fcntl.LOCK_UN)
+        with LOCK, common.experiment_lock(exp):
+            return function(exp, *args, **kwargs)
     return call
 
 

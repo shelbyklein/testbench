@@ -489,6 +489,11 @@ def scan(path_or_obj, forbidden):
 # ---------------------------------------------------------------- accepting a review
 
 def accept_review(exp_dir, label, phase, submitted_hash, evaluator_version, review):
+    with common.experiment_lock(exp_dir):
+        return _accept_review(exp_dir, label, phase, submitted_hash, evaluator_version, review)
+
+
+def _accept_review(exp_dir, label, phase, submitted_hash, evaluator_version, review):
     """Bind a review to the exact submission it judged, or refuse it as stale.
 
     Refuses a v1 (read-only) experiment. Resolves the label operator-side, recomputes the

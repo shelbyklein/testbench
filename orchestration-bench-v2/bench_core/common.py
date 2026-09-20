@@ -1,4 +1,6 @@
 """Shared helpers and unknown-value semantics (contracts/CONTRACTS.md §3)."""
+import contextlib
+import fcntl
 import hashlib
 import json
 import math
@@ -69,3 +71,14 @@ def total(measurements):
     known = [m['value'] for m in measurements if m and m.get('value') is not None]
     unknown = len(measurements) - len(known)
     return {'value': sum(known) if known else None, 'complete': unknown == 0 and bool(known), 'unknownCount': unknown}
+
+
+@contextlib.contextmanager
+def experiment_lock(exp_dir):
+    """Serialize experiment.json writers across the operator and review processes."""
+    with (Path(exp_dir) / '.controller.lock').open('a') as handle:
+        fcntl.flock(handle, fcntl.LOCK_EX)
+        try:
+            yield
+        finally:
+            fcntl.flock(handle, fcntl.LOCK_UN)
