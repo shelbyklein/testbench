@@ -1,0 +1,66 @@
+{
+  "contract": "method/1",
+  "id": "graph",
+  "version": "1.0.0",
+  "label": "Native graph candidate",
+  "mode": "native-graph",
+  "configured": false,
+  "roles": [
+    {
+      "role": "orchestrator node",
+      "model": {
+        "requested": "RECORD GRAPH ORCHESTRATOR MODEL",
+        "effective": null,
+        "verified": false
+      },
+      "reasoning": {
+        "requested": "RECORD REASONING/EFFORT SETTING IF APPLICABLE",
+        "effective": null,
+        "verified": false
+      }
+    },
+    {
+      "role": "worker node",
+      "model": {
+        "requested": "RECORD GRAPH WORKER MODEL",
+        "effective": null,
+        "verified": false
+      },
+      "reasoning": {
+        "requested": "RECORD REASONING/EFFORT SETTING IF APPLICABLE",
+        "effective": null,
+        "verified": false
+      }
+    }
+  ],
+  "transport": "RECORD TRANSPORT: execution adapter runtime and executor command",
+  "launch_template": "methods/templates/graph.md",
+  "internal_review": {
+    "enabled": false,
+    "reviewer_role": null
+  },
+  "adapter": "adapters/claude_workflow",
+  "budgets": {
+    "max_workers": {
+      "limit": null,
+      "enforcement": "unenforced"
+    },
+    "max_attempts": {
+      "limit": null,
+      "enforcement": "unenforced"
+    },
+    "max_minutes": {
+      "limit": null,
+      "enforcement": "unenforced"
+    },
+    "max_tokens": {
+      "limit": null,
+      "enforcement": "unavailable"
+    },
+    "max_cost_usd": {
+      "limit": null,
+      "enforcement": "unavailable"
+    }
+  },
+  "notes": "Unconfigured placeholder so experiment definitions can reference a graph candidate. The workflow lane owns the adapter and refines this file; do not treat it as configured."
+}

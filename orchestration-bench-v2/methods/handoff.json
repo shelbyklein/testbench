@@ -1,0 +1,66 @@
+{
+  "contract": "method/1",
+  "id": "handoff",
+  "version": "1.0.0",
+  "label": "Astra low - written handoff",
+  "mode": "written-handoff",
+  "configured": false,
+  "roles": [
+    {
+      "role": "planner",
+      "model": {
+        "requested": "Astra",
+        "effective": null,
+        "verified": false
+      },
+      "reasoning": {
+        "requested": "low",
+        "effective": null,
+        "verified": false
+      }
+    },
+    {
+      "role": "executor",
+      "model": {
+        "requested": "RECORD EXACT EXECUTOR MODEL",
+        "effective": null,
+        "verified": false
+      },
+      "reasoning": {
+        "requested": "RECORD EXECUTOR REASONING/EFFORT SETTING IF APPLICABLE",
+        "effective": null,
+        "verified": false
+      }
+    }
+  ],
+  "transport": "RECORD TRANSPORT: GitHub issue or local handoff artifact",
+  "launch_template": "methods/templates/written-handoff.md",
+  "internal_review": {
+    "enabled": false,
+    "reviewer_role": null
+  },
+  "adapter": null,
+  "budgets": {
+    "max_workers": {
+      "limit": null,
+      "enforcement": "unenforced"
+    },
+    "max_attempts": {
+      "limit": null,
+      "enforcement": "unenforced"
+    },
+    "max_minutes": {
+      "limit": null,
+      "enforcement": "unenforced"
+    },
+    "max_tokens": {
+      "limit": null,
+      "enforcement": "unavailable"
+    },
+    "max_cost_usd": {
+      "limit": null,
+      "enforcement": "unavailable"
+    }
+  },
+  "notes": "Planner writes a standalone handoff then stops; the executor completes the work without active steering. The executor recipient was never resolved in v1 and must be recorded before this method can run."
+}
