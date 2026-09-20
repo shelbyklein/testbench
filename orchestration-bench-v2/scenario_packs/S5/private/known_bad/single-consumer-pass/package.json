@@ -1,0 +1,9 @@
+{
+  "name": "fieldnotes-contract-migration",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Fieldnotes note record v1, one shared persistence layer and four consumers.",
+  "scripts": {
+    "test": "node --test tests/smoke.test.mjs"
+  }
+}
