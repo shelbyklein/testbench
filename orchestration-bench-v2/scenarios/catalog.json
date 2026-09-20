@@ -1,0 +1,29 @@
+[
+  {
+    "id": "S1",
+    "slug": "filtering",
+    "title": "Find only the notes I asked for",
+    "kind": "Contained bug",
+    "minutes": 30,
+    "repair": 15,
+    "brief_file": "scenarios/S1.md"
+  },
+  {
+    "id": "S2",
+    "slug": "import",
+    "title": "Bring a notebook across safely",
+    "kind": "Cross-layer feature",
+    "minutes": 60,
+    "repair": 20,
+    "brief_file": "scenarios/S2.md"
+  },
+  {
+    "id": "S3",
+    "slug": "undo",
+    "title": "Make archiving feel recoverable",
+    "kind": "Product and interaction judgment",
+    "minutes": 60,
+    "repair": 20,
+    "brief_file": "scenarios/S3.md"
+  }
+]
