@@ -1,0 +1,77 @@
+{
+  "contract": "scenario/1",
+  "id": "S3",
+  "version": "1.0.0",
+  "slug": "undo",
+  "title": "Make archiving feel recoverable",
+  "kind": "Product and interaction judgment",
+  "minutes": 60,
+  "repair": 20,
+  "participant": {
+    "source": "seed",
+    "brief": "scenarios/S3.md"
+  },
+  "public_checks": [
+    [
+      "node",
+      "--test",
+      "tests/smoke.test.mjs"
+    ]
+  ],
+  "grader": {
+    "argv": [
+      "node",
+      "evaluator/checks.mjs",
+      "S3"
+    ],
+    "version": "1.0.0",
+    "expected_check_ids": [
+      "R1",
+      "R2",
+      "R3",
+      "U1",
+      "U2",
+      "U3",
+      "U4",
+      "U5",
+      "U6",
+      "U7",
+      "U8"
+    ],
+    "timeout_seconds": 180
+  },
+  "private": [
+    "evaluator"
+  ],
+  "calibration": {
+    "reference": null,
+    "known_bad": []
+  },
+  "manual_checks": [
+    {
+      "id": "ui-undo",
+      "instruction": "Archive using keyboard, observe clear nonmodal feedback, and undo within 10 seconds. The restored note and useful focus are present."
+    },
+    {
+      "id": "ui-expiry",
+      "instruction": "Let the 10-second window expire. Undo is no longer offered as available; no false success message."
+    },
+    {
+      "id": "ui-refresh",
+      "instruction": "Archive and reload promptly. A working Undo is still available for the remaining time."
+    },
+    {
+      "id": "ui-latest",
+      "instruction": "Archive two notes rapidly. Feedback and Undo refer to the second; the first remains archived."
+    },
+    {
+      "id": "ui-errors",
+      "instruction": "Fail archive and undo requests separately. Feedback is understandable and view matches confirmed server state."
+    },
+    {
+      "id": "ui-context",
+      "instruction": "Search/folder state is preserved across archive/undo. Exercise at 390px; inspect keyboard access, focus destination, and screen-reader announcement semantics."
+    }
+  ],
+  "notes": "v1 scenario carried over unchanged; brief, seed and evaluator are the v1 files. v1 known-correct fixtures were not shipped in the v1 source tree, so calibration.reference is unknown (null)."
+}
