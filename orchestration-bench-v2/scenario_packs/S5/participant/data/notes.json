@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "notes": [
+    {
+      "id": "n-1",
+      "title": "An unfinished thought",
+      "body": "Small tools, kept sharp.",
+      "tags": "Tools,small, tools",
+      "created": "2026-01-02 03:04:05",
+      "folder": "Workshop"
+    },
+    {
+      "id": "n-2",
+      "title": "Lamp, brass",
+      "body": "A \"small\" brass lamp on the bench.",
+      "tags": "garden",
+      "created": "2026-01-03 11:22:33",
+      "folder": "Garden"
+    },
+    {
+      "id": "n-3",
+      "title": "Seedlings",
+      "body": "",
+      "tags": "",
+      "created": "2026-02-14 08:00:00",
+      "folder": "Garden"
+    },
+    {
+      "id": "n-4",
+      "title": "Loose ends",
+      "body": "No folder for this one yet.",
+      "tags": "misc,  ",
+      "created": "2026-02-20 19:45:01",
+      "folder": null
+    },
+    {
+      "id": "n-5",
+      "title": "Winter list",
+      "body": "Firewood, gutters, the gate.",
+      "tags": "house,winter",
+      "created": "2026-03-01 00:00:00",
+      "folder": "House"
+    }
+  ]
+}

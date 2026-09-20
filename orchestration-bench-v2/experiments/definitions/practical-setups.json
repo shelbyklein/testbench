@@ -1,0 +1,37 @@
+{
+  "contract": "experiment-definition/1",
+  "id": "practical-setups",
+  "title": "Practical setups people actually use",
+  "question": "Across the setups a person would realistically choose, which coordination shape produces better accepted work on the same scenarios under the same external grading?",
+  "establishes": "A like-for-like comparison of four realistic setups on identical tasks with identical grading. It does not isolate the worker model: the setups deliberately differ in more than one way.",
+  "methods": [
+    "solo",
+    "handoff",
+    "active",
+    "graph"
+  ],
+  "scenarios": [
+    "S1",
+    "S2",
+    "S3",
+    "S4",
+    "S5",
+    "S6"
+  ],
+  "repeats": 1,
+  "seed": 20260920,
+  "phases": [
+    "first",
+    "repaired"
+  ],
+  "environment": {
+    "id": "local-default",
+    "notes": "Local operator machine, offline. Node 22+ and Git only; no provider calls are made by the bench. Record the actual machine, tool versions and network posture before starting."
+  },
+  "controls": {
+    "same_external_grading": true,
+    "repair_feedback": "identical",
+    "fixed_worker": false,
+    "internal_reviewer": "varies by method; see each method definition"
+  }
+}

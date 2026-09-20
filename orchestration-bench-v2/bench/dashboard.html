@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Orchestration Bench — operator</title>
+<link rel="stylesheet" href="/assets/bench.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the experiment</a>
+
+<div id="synthetic-banner" class="banner synthetic hidden" role="status">
+  SYNTHETIC EXPERIMENT — every number on this page comes from fixtures. Nothing here measures a real system.
+</div>
+<div id="readonly-banner" class="banner readonly hidden" role="status">
+  Read-only v1 experiment. Scores, hashes and the report format are never rewritten by v2.
+</div>
+<div id="integrity-banner" class="banner integrity hidden" role="alert">
+  Bench files changed since this experiment was prepared. Do not compare results across evaluator
+  versions — restore this version or prepare a new experiment.
+</div>
+
+<header class="site">
+  <div class="site-inner">
+    <div class="brand">Orchestration Bench
+      <small id="brand-sub">loading…</small>
+    </div>
+    <div class="controls">
+      <label for="phase">Phase
+        <select id="phase">
+          <option value="first">First submission</option>
+          <option value="repaired">After repair</option>
+        </select>
+      </label>
+      <label for="run-picker">Run in focus
+        <select id="run-picker"></select>
+      </label>
+      <button id="refresh" type="button">Refresh</button>
+    </div>
+  </div>
+</header>
+
+<main id="main" class="wrap" tabindex="-1">
+  <h1 id="exp-title">Loading the experiment…</h1>
+  <p class="small" id="exp-question"></p>
+
+  <section class="cols" aria-label="Experiment status">
+    <div class="panel">
+      <h2>Can this experiment start?</h2>
+      <div id="readiness"></div>
+    </div>
+    <div class="panel">
+      <h2>What is fixed, and how runs were ordered</h2>
+      <div id="integrity-status"></div>
+      <div id="schedule"></div>
+    </div>
+  </section>
+
+  <div class="tabs" role="tablist" aria-label="Bench views">
+    <button type="button" role="tab" id="tab-runs" aria-controls="panel-runs" aria-selected="true" tabindex="0">Runs &amp; review</button>
+    <button type="button" role="tab" id="tab-trace" aria-controls="panel-trace" aria-selected="false" tabindex="-1">Trace view</button>
+    <button type="button" role="tab" id="tab-compare" aria-controls="panel-compare" aria-selected="false" tabindex="-1">Comparison</button>
+  </div>
+
+  <section id="panel-runs" role="tabpanel" aria-labelledby="tab-runs" tabindex="0">
+    <h2>Runs, grouped by what they can be compared with</h2>
+    <p class="small">Runs in one group share a pair key: the same scenario version, environment and
+      repeat. Only runs inside a group are comparable, and only within the same phase.</p>
+    <div id="run-groups"></div>
+
+    <h2 id="detail-heading">Selected run</h2>
+    <div id="run-detail"></div>
+
+    <h2>Recorded method setups</h2>
+    <p class="small">The exact setup is frozen before a run starts. Nothing on this page launches an agent.</p>
+    <div class="panel" id="methods"></div>
+    <div class="panel hidden" id="config-panel">
+      <h3 id="config-title"></h3>
+      <p class="small">Replace every RECORD placeholder, then set <code>configured</code> to true.
+        A method with started runs can no longer be edited.</p>
+      <label class="label" for="config-json">Method definition (JSON)</label>
+      <textarea id="config-json" class="mono" rows="16"></textarea>
+      <div class="rowline" style="margin-top:12px">
+        <button type="button" class="primary" id="config-save">Save method setup</button>
+        <button type="button" id="config-cancel">Cancel</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="panel-trace" role="tabpanel" aria-labelledby="tab-trace" tabindex="0" hidden>
+    <h2>What actually ran</h2>
+    <p class="small">Declared work versus observed work for the run in focus. A node that failed, was
+      skipped or was never observed is shown as such — never as a quiet success.</p>
+    <div id="trace-body"></div>
+  </section>
+
+  <section id="panel-compare" role="tabpanel" aria-labelledby="tab-compare" tabindex="0" hidden>
+    <h2>Quality first, then what it cost</h2>
+    <div id="compare-body"></div>
+  </section>
+
+  <footer class="site">
+    <p id="location" class="mono"></p>
+    <p>Prepared runs are not results. Unknown measurements stay unknown; they are never shown as zero.
+      This bench does not select models, dispatch agents, or deploy anything.</p>
+  </footer>
+</main>
+
+<div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+<script>window.BENCH_TOKEN = '__BENCH_TOKEN__';</script>
+<script src="/assets/dashboard.js" defer></script>
+</body>
+</html>

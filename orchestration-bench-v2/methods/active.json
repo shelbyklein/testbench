@@ -1,0 +1,79 @@
+{
+  "contract": "method/1",
+  "id": "active",
+  "version": "1.0.0",
+  "label": "Fable directing Opus - active orchestration",
+  "mode": "active-orchestration",
+  "configured": false,
+  "roles": [
+    {
+      "role": "orchestrator",
+      "model": {
+        "requested": "Fable",
+        "effective": null,
+        "verified": false
+      },
+      "reasoning": {
+        "requested": "RECORD ORCHESTRATOR REASONING/EFFORT SETTING IF APPLICABLE",
+        "effective": null,
+        "verified": false
+      }
+    },
+    {
+      "role": "implementer",
+      "model": {
+        "requested": "Opus",
+        "effective": null,
+        "verified": false
+      },
+      "reasoning": {
+        "requested": "RECORD IMPLEMENTER REASONING/EFFORT SETTING IF APPLICABLE",
+        "effective": null,
+        "verified": false
+      }
+    },
+    {
+      "role": "Astra involvement",
+      "model": {
+        "requested": "RECORD ASTRA ROLE OR REMOVE THIS ROLE IF THERE IS NONE",
+        "effective": null,
+        "verified": false
+      },
+      "reasoning": {
+        "requested": "RECORD REASONING/EFFORT SETTING IF APPLICABLE",
+        "effective": null,
+        "verified": false
+      }
+    }
+  ],
+  "transport": "RECORD TRANSPORT: active coordination tool/runtime and communication channel",
+  "launch_template": "methods/templates/active-orchestration.md",
+  "internal_review": {
+    "enabled": false,
+    "reviewer_role": null
+  },
+  "adapter": null,
+  "budgets": {
+    "max_workers": {
+      "limit": null,
+      "enforcement": "unenforced"
+    },
+    "max_attempts": {
+      "limit": null,
+      "enforcement": "unenforced"
+    },
+    "max_minutes": {
+      "limit": null,
+      "enforcement": "unenforced"
+    },
+    "max_tokens": {
+      "limit": null,
+      "enforcement": "unavailable"
+    },
+    "max_cost_usd": {
+      "limit": null,
+      "enforcement": "unavailable"
+    }
+  },
+  "notes": "Orchestrator actively directs the implementer. Astra's role in this setup was never resolved in v1: record the exact role, or remove the role entry if there is none. Record model versions, effort settings, delegation limits and interventions before starting."
+}

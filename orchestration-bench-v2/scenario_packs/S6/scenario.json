@@ -1,0 +1,141 @@
+{
+  "contract": "scenario/1",
+  "id": "S6",
+  "version": "1.0.0",
+  "slug": "interruption-and-recovery",
+  "title": "Make the bulk publish survive a hiccup and a restart",
+  "kind": "Interruption and recovery",
+  "minutes": 75,
+  "repair": 25,
+  "participant": {
+    "source": "scenario_packs/S6/participant",
+    "brief": "scenario_packs/S6/participant/TASK.md"
+  },
+  "public_checks": [
+    [
+      "node",
+      "--test",
+      "tests/smoke.test.mjs"
+    ]
+  ],
+  "baseline_regression_gate": false,
+  "grader": {
+    "argv": [
+      "node",
+      "scenario_packs/S6/private/grade.mjs"
+    ],
+    "version": "1.1.0",
+    "expected_check_ids": [
+      "R1",
+      "R2",
+      "R3",
+      "R4",
+      "R5",
+      "R6",
+      "R7",
+      "R8",
+      "R9",
+      "R10"
+    ],
+    "timeout_seconds": 180
+  },
+  "private": [
+    "scenario_packs/S6/private"
+  ],
+  "calibration": {
+    "reference": "scenario_packs/S6/private/reference",
+    "known_bad": [
+      {
+        "id": "duplicate-effects",
+        "path": "scenario_packs/S6/private/known_bad/duplicate-effects",
+        "must_fail": [
+          "R2",
+          "R5",
+          "R8"
+        ]
+      },
+      {
+        "id": "lost-progress",
+        "path": "scenario_packs/S6/private/known_bad/lost-progress",
+        "must_fail": [
+          "R2",
+          "R6",
+          "R8",
+          "R9"
+        ]
+      },
+      {
+        "id": "swallowed-failure",
+        "path": "scenario_packs/S6/private/known_bad/swallowed-failure",
+        "must_fail": [
+          "R3",
+          "R4"
+        ]
+      },
+      {
+        "id": "non-durable-ack",
+        "path": "scenario_packs/S6/private/known_bad/non-durable-ack",
+        "must_fail": [
+          "R5",
+          "R7"
+        ]
+      },
+      {
+        "id": "report-forgery",
+        "path": "scenario_packs/S6/private/known_bad/report-forgery",
+        "must_fail": [
+          "R1",
+          "R2",
+          "R3",
+          "R4",
+          "R5",
+          "R6",
+          "R7",
+          "R8",
+          "R9",
+          "R10"
+        ]
+      },
+      {
+        "id": "mid-import-exit",
+        "path": "scenario_packs/S6/private/known_bad/mid-import-exit",
+        "must_fail": [
+          "R1",
+          "R2",
+          "R3",
+          "R4",
+          "R5",
+          "R6",
+          "R7",
+          "R8",
+          "R9",
+          "R10"
+        ]
+      },
+      {
+        "id": "fake-ipc-result",
+        "path": "scenario_packs/S6/private/known_bad/fake-ipc-result",
+        "must_fail": [
+          "R2",
+          "R3",
+          "R4",
+          "R5",
+          "R7",
+          "R8",
+          "R9"
+        ]
+      }
+    ]
+  },
+  "manual_checks": [
+    {
+      "id": "recovery-seams",
+      "instruction": "Read the diff: is the write-ahead intent, the idempotency key and the reconciliation expressed once, or scattered per call site in ways that will drift the next time an effect is added?"
+    },
+    {
+      "id": "recovery-honesty",
+      "instruction": "Where trace evidence exists, note whether repeated work, recovery cost and reused artifacts were reported only where observed, or filled in with zeros. A number that the trace cannot support must be unavailable, not 0."
+    }
+  ],
+  "notes": "A resumable bulk publish over five saved records (four unarchived) behind an append-only outbox keyed by idempotency key. The grader drives the candidate through a deterministic fault wrapper: a transient send failure, a permanent send failure, a kill at the semantic milestone 'first_persisted_ack' (the outbox file on disk durably holds its first entry) and a kill in the gap between an accepted effect and the record of it. The milestone is defined by the persisted-ack event, never by a count of agents or harness calls. The job writes nothing inside the participant source at run time (the grader and the smoke test both work in a temporary directory), so no participant.runtime_paths are declared and data/notes.json is captured and graded like any other shipped record. baseline_regression_gate is false: the start-state smoke test covers only the happy path and the grader owns regressions (R10). The grader runs candidate code only in a forked worker that is never told where the report goes and whose results are authenticated with a per-run nonce it cannot read; the supervisor rebuilds the report from its own check list, fails anything it did not hear authenticated, and records early exits, timeouts and unauthenticated messages in details.tamperSignals. This defends the grade against forgery, not the machine: it is not a sandbox."
+}

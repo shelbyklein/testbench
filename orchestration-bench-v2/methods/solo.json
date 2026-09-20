@@ -1,0 +1,53 @@
+{
+  "contract": "method/1",
+  "id": "solo",
+  "version": "1.0.0",
+  "label": "Astra low - solo",
+  "mode": "solo",
+  "configured": true,
+  "roles": [
+    {
+      "role": "implementer and self-reviewer",
+      "model": {
+        "requested": "Astra",
+        "effective": null,
+        "verified": false
+      },
+      "reasoning": {
+        "requested": "low",
+        "effective": null,
+        "verified": false
+      }
+    }
+  ],
+  "transport": "single fresh agent session",
+  "launch_template": "methods/templates/solo.md",
+  "internal_review": {
+    "enabled": false,
+    "reviewer_role": null
+  },
+  "adapter": null,
+  "budgets": {
+    "max_workers": {
+      "limit": 1,
+      "enforcement": "unenforced"
+    },
+    "max_attempts": {
+      "limit": null,
+      "enforcement": "unenforced"
+    },
+    "max_minutes": {
+      "limit": null,
+      "enforcement": "unenforced"
+    },
+    "max_tokens": {
+      "limit": null,
+      "enforcement": "unavailable"
+    },
+    "max_cost_usd": {
+      "limit": null,
+      "enforcement": "unavailable"
+    }
+  },
+  "notes": "Carried over from v1 unchanged: one agent session, no delegated agents. Normal self-review and tests are allowed. Operator-launched, so no budget is enforced by the bench."
+}

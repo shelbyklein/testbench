@@ -1,0 +1,68 @@
+{
+  "contract": "workflow-definition/1",
+  "id": "solo",
+  "version": "1.0.0",
+  "script": "adapters/claude_workflow/workflow/solo.v1.js",
+  "scriptVersion": "solo.v1",
+  "runtime": {
+    "kind": "claude-code-dynamic-workflow",
+    "activation": "single-node definition; normally the solo method is operator-launched without a workflow at all. This definition exists so the bench-controlled run(), the milestone fault hook and the restart logic are exercised identically for one node and for a graph.",
+    "minimumClaudeCodeVersion": "2.1.248",
+    "observedClaudeCodeVersion": "2.1.278",
+    "status": "available-unverified",
+    "statusNote": "Never executed live by this lane. Offline validation only."
+  },
+  "effortPolicy": {
+    "perNodeEffortOverrides": false,
+    "perNodeModelOverrides": false,
+    "note": "No model or effort override, so a solo arm and a graph arm inherit the same session settings."
+  },
+  "nodes": [
+    {
+      "id": "solo",
+      "role": "solo",
+      "label": "Solo implementer",
+      "phase": "Implement",
+      "dependsOn": [],
+      "inputs": ["specification", "repository-tree"],
+      "outputs": ["final-artifact"],
+      "owns": ["SUBMISSION.md"],
+      "freshSession": true,
+      "chargedToCandidate": true,
+      "outputSchema": {
+        "stableId": "solo",
+        "fields": ["nodeId", "sourceRevision", "artifactHash", "summary"]
+      }
+    }
+  ],
+  "join": {
+    "by": ["nodeId", "sourceRevision"],
+    "byListIndex": false,
+    "expectedWorkers": [],
+    "note": "One node; the join is degenerate but still accounts for the node explicitly, so a failed solo node can never be reported as an empty success."
+  },
+  "retry": {
+    "maxAttemptsPerNode": 2,
+    "retryableStatuses": ["failed"]
+  },
+  "exclusiveOwnership": {
+    "solo": ["SUBMISSION.md"]
+  },
+  "finalArtifact": {
+    "producedBy": "solo",
+    "paths": ["SUBMISSION.md"],
+    "requires": ["joinOk"]
+  },
+  "milestones": [
+    "first_persisted_ack",
+    "final_artifact_written"
+  ],
+  "budgets": {
+    "max_concurrency": {"limit": 1, "enforcement": "enforced"},
+    "max_workers": {"limit": 1, "enforcement": "enforced"},
+    "max_attempts_total": {"limit": 4, "enforcement": "enforced"},
+    "max_elapsed_seconds": {"limit": 5400, "enforcement": "enforced"},
+    "max_tokens": {"limit": null, "enforcement": "unavailable"},
+    "max_cost_usd": {"limit": null, "enforcement": "unavailable"}
+  }
+}

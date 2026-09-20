@@ -1,0 +1,72 @@
+{
+  "S1": [
+    {
+      "id": "ui-combination",
+      "instruction": "Select Garden; search lamp; expect zero cards and correct empty/count state."
+    },
+    {
+      "id": "ui-multiword",
+      "instruction": "Clear folder; search small tools; expect only An unfinished thought. Toggle archived and confirm filters still apply."
+    },
+    {
+      "id": "ui-race",
+      "instruction": "Delay an older /api/notes request in browser tooling, issue a newer query, and release responses out of order. Newer results must remain."
+    },
+    {
+      "id": "ui-regression",
+      "instruction": "Exercise keyboard focus, folder/search controls, archive, and 390px layout. No new blocking regression."
+    }
+  ],
+  "S2": [
+    {
+      "id": "ui-import",
+      "instruction": "Import a valid two-note file from the visible control; verify counts, rendered notes, and persistence after reload."
+    },
+    {
+      "id": "ui-invalid-retry",
+      "instruction": "Try malformed JSON, a valid first entry followed by an invalid entry, then select the same corrected file again. Failure is clear, nothing partially imports, retry works."
+    },
+    {
+      "id": "ui-busy",
+      "instruction": "Delay the import response and attempt another submission. Busy feedback is visible and duplicate submission is prevented."
+    },
+    {
+      "id": "ui-network",
+      "instruction": "Abort/fail the import request. Do not show success; keep existing notes/view and allow retry."
+    },
+    {
+      "id": "ui-safe-text",
+      "instruction": "Import a title/body containing HTML-like text. It must display as text without creating executable elements."
+    },
+    {
+      "id": "ui-accessibility",
+      "instruction": "Use import and feedback by keyboard; inspect accessible labels/status announcements and layout at 390px."
+    }
+  ],
+  "S3": [
+    {
+      "id": "ui-undo",
+      "instruction": "Archive using keyboard, observe clear nonmodal feedback, and undo within 10 seconds. The restored note and useful focus are present."
+    },
+    {
+      "id": "ui-expiry",
+      "instruction": "Let the 10-second window expire. Undo is no longer offered as available; no false success message."
+    },
+    {
+      "id": "ui-refresh",
+      "instruction": "Archive and reload promptly. A working Undo is still available for the remaining time."
+    },
+    {
+      "id": "ui-latest",
+      "instruction": "Archive two notes rapidly. Feedback and Undo refer to the second; the first remains archived."
+    },
+    {
+      "id": "ui-errors",
+      "instruction": "Fail archive and undo requests separately. Feedback is understandable and view matches confirmed server state."
+    },
+    {
+      "id": "ui-context",
+      "instruction": "Search/folder state is preserved across archive/undo. Exercise at 390px; inspect keyboard access, focus destination, and screen-reader announcement semantics."
+    }
+  ]
+}

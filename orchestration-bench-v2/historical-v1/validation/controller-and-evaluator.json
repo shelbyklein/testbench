@@ -1,0 +1,93 @@
+{
+  "checks": [
+    {
+      "name": "Nine repositories have identical starting code within each scenario",
+      "passed": true
+    },
+    {
+      "name": "Unconfigured method cannot start",
+      "passed": true
+    },
+    {
+      "name": "S1 unsolved fixture is correctly rejected",
+      "passed": true,
+      "passedChecks": 7,
+      "total": 14
+    },
+    {
+      "name": "S1 recapture cannot overwrite evidence",
+      "passed": true
+    },
+    {
+      "name": "S2 unsolved fixture is correctly rejected",
+      "passed": true,
+      "passedChecks": 3,
+      "total": 14
+    },
+    {
+      "name": "S2 recapture cannot overwrite evidence",
+      "passed": true
+    },
+    {
+      "name": "S3 unsolved fixture is correctly rejected",
+      "passed": true,
+      "passedChecks": 3,
+      "total": 11
+    },
+    {
+      "name": "S3 recapture cannot overwrite evidence",
+      "passed": true
+    },
+    {
+      "name": "Blind exports strip known method and session artifacts",
+      "passed": true
+    },
+    {
+      "name": "Unexecuted manual checks do not pass acceptance",
+      "passed": true
+    },
+    {
+      "name": "Scores without evidence are rejected",
+      "passed": true
+    },
+    {
+      "name": "Missing measurements remain empty in CSV",
+      "passed": true
+    },
+    {
+      "name": "Method cannot change after its first run starts",
+      "passed": true
+    },
+    {
+      "name": "S1 known-correct API behavior passes evaluator",
+      "passed": true,
+      "passedChecks": 14,
+      "total": 14
+    },
+    {
+      "name": "S2 known-correct API behavior passes evaluator",
+      "passed": true,
+      "passedChecks": 14,
+      "total": 14
+    },
+    {
+      "name": "S3 known-correct API behavior passes evaluator",
+      "passed": true,
+      "passedChecks": 11,
+      "total": 11
+    },
+    {
+      "name": "Repair does not alter first-submission result",
+      "passed": true
+    },
+    {
+      "name": "Captured snapshot hashes verify after evaluation",
+      "passed": true
+    },
+    {
+      "name": "Tampered snapshot cannot be evaluated",
+      "passed": true
+    }
+  ],
+  "allPassed": true
+}

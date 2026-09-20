@@ -1,0 +1,18 @@
+{
+  "passed": true,
+  "checks": [
+    "9-run dashboard",
+    "configuration validation and save",
+    "review evidence validation",
+    "review persistence after reload",
+    "nullable resource measurements",
+    "mutation token enforcement",
+    "blind method labels",
+    "automatic success retains manual gate",
+    "390px viewport no page overflow",
+    "seed app rendering",
+    "seed intentional bug reproduced",
+    "baseline archive interaction"
+  ],
+  "consoleErrors": []
+}

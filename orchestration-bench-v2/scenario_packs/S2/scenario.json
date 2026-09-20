@@ -1,0 +1,90 @@
+{
+  "contract": "scenario/1",
+  "id": "S2",
+  "version": "1.0.0",
+  "slug": "import",
+  "title": "Bring a notebook across safely",
+  "kind": "Cross-layer feature",
+  "minutes": 60,
+  "repair": 20,
+  "participant": {
+    "source": "seed",
+    "brief": "scenarios/S2.md",
+    "runtime_paths": [
+      "data"
+    ]
+  },
+  "public_checks": [
+    [
+      "node",
+      "--test",
+      "tests/smoke.test.mjs"
+    ]
+  ],
+  "grader": {
+    "argv": [
+      "node",
+      "evaluator/checks.mjs",
+      "S2"
+    ],
+    "version": "1.0.0",
+    "expected_check_ids": [
+      "R1",
+      "R2",
+      "R3",
+      "I1",
+      "I2",
+      "I3",
+      "I4",
+      "I5",
+      "I6",
+      "I7",
+      "I8",
+      "I9",
+      "I10",
+      "I11"
+    ],
+    "timeout_seconds": 180
+  },
+  "private": [
+    "evaluator"
+  ],
+  "calibration": {
+    "reference": null,
+    "known_bad": []
+  },
+  "manual_checks": [
+    {
+      "id": "ui-import",
+      "instruction": "Import a valid two-note file from the visible control; verify counts, rendered notes, and persistence after reload.",
+      "description": "Import a valid two-note file from the visible control; verify counts, rendered notes, and persistence after reload."
+    },
+    {
+      "id": "ui-invalid-retry",
+      "instruction": "Try malformed JSON, a valid first entry followed by an invalid entry, then select the same corrected file again. Failure is clear, nothing partially imports, retry works.",
+      "description": "Try malformed JSON, a valid first entry followed by an invalid entry, then select the same corrected file again. Failure is clear, nothing partially imports, retry works."
+    },
+    {
+      "id": "ui-busy",
+      "instruction": "Delay the import response and attempt another submission. Busy feedback is visible and duplicate submission is prevented.",
+      "description": "Delay the import response and attempt another submission. Busy feedback is visible and duplicate submission is prevented."
+    },
+    {
+      "id": "ui-network",
+      "instruction": "Abort/fail the import request. Do not show success; keep existing notes/view and allow retry.",
+      "description": "Abort/fail the import request. Do not show success; keep existing notes/view and allow retry."
+    },
+    {
+      "id": "ui-safe-text",
+      "instruction": "Import a title/body containing HTML-like text. It must display as text without creating executable elements.",
+      "description": "Import a title/body containing HTML-like text. It must display as text without creating executable elements."
+    },
+    {
+      "id": "ui-accessibility",
+      "instruction": "Use import and feedback by keyboard; inspect accessible labels/status announcements and layout at 390px.",
+      "description": "Use import and feedback by keyboard; inspect accessible labels/status announcements and layout at 390px."
+    }
+  ],
+  "notes": "v1 scenario carried over unchanged; brief, seed and evaluator are the v1 files. v1 known-correct fixtures were not shipped in the v1 source tree, so calibration.reference is unknown (null).",
+  "baseline_regression_gate": true
+}

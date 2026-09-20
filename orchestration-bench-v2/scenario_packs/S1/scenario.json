@@ -1,0 +1,80 @@
+{
+  "contract": "scenario/1",
+  "id": "S1",
+  "version": "1.0.0",
+  "slug": "filtering",
+  "title": "Find only the notes I asked for",
+  "kind": "Contained bug",
+  "minutes": 30,
+  "repair": 15,
+  "participant": {
+    "source": "seed",
+    "brief": "scenarios/S1.md",
+    "runtime_paths": [
+      "data"
+    ]
+  },
+  "public_checks": [
+    [
+      "node",
+      "--test",
+      "tests/smoke.test.mjs"
+    ]
+  ],
+  "grader": {
+    "argv": [
+      "node",
+      "evaluator/checks.mjs",
+      "S1"
+    ],
+    "version": "1.0.0",
+    "expected_check_ids": [
+      "R1",
+      "R2",
+      "R3",
+      "F1",
+      "F2",
+      "F3",
+      "F4",
+      "F5",
+      "F6",
+      "F7",
+      "F8",
+      "F9",
+      "F10",
+      "F11"
+    ],
+    "timeout_seconds": 180
+  },
+  "private": [
+    "evaluator"
+  ],
+  "calibration": {
+    "reference": null,
+    "known_bad": []
+  },
+  "manual_checks": [
+    {
+      "id": "ui-combination",
+      "instruction": "Select Garden; search lamp; expect zero cards and correct empty/count state.",
+      "description": "Select Garden; search lamp; expect zero cards and correct empty/count state."
+    },
+    {
+      "id": "ui-multiword",
+      "instruction": "Clear folder; search small tools; expect only An unfinished thought. Toggle archived and confirm filters still apply.",
+      "description": "Clear folder; search small tools; expect only An unfinished thought. Toggle archived and confirm filters still apply."
+    },
+    {
+      "id": "ui-race",
+      "instruction": "Delay an older /api/notes request in browser tooling, issue a newer query, and release responses out of order. Newer results must remain.",
+      "description": "Delay an older /api/notes request in browser tooling, issue a newer query, and release responses out of order. Newer results must remain."
+    },
+    {
+      "id": "ui-regression",
+      "instruction": "Exercise keyboard focus, folder/search controls, archive, and 390px layout. No new blocking regression.",
+      "description": "Exercise keyboard focus, folder/search controls, archive, and 390px layout. No new blocking regression."
+    }
+  ],
+  "notes": "v1 scenario carried over unchanged; brief, seed and evaluator are the v1 files. v1 known-correct fixtures were not shipped in the v1 source tree, so calibration.reference is unknown (null).",
+  "baseline_regression_gate": true
+}

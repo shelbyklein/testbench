@@ -1,0 +1,159 @@
+{
+  "contract": "workflow-definition/1",
+  "id": "graph-candidate",
+  "version": "1.0.0",
+  "script": "adapters/claude_workflow/workflow/graph-candidate.v1.js",
+  "scriptVersion": "graph-candidate.v1",
+  "runtime": {
+    "kind": "claude-code-dynamic-workflow",
+    "activation": "in-session Workflow tool or saved /graph-candidate command; there is no `claude workflow` CLI subcommand",
+    "minimumClaudeCodeVersion": "2.1.248",
+    "observedClaudeCodeVersion": "2.1.278",
+    "status": "available-unverified",
+    "statusNote": "Native workflows are available in this machine's configuration (see CAPABILITY.md §2), but no workflow has been executed by this lane. Execution is a paid model call and was not performed. Every artifact produced here is offline validation."
+  },
+  "effortPolicy": {
+    "perNodeEffortOverrides": false,
+    "perNodeModelOverrides": false,
+    "note": "The script sets neither `effort` nor `model` on any agent() call so every node inherits the session's resolved model and effort. Launching this arm with /effort ultracode raises effort to xhigh at the same time as it enables orchestration and is a CONFOUND (CAPABILITY.md §4a); such a run must be recorded as confounded."
+  },
+  "nodes": [
+    {
+      "id": "planner",
+      "role": "planner",
+      "label": "Planner",
+      "phase": "Plan",
+      "dependsOn": [],
+      "inputs": ["specification", "repository-tree"],
+      "outputs": ["plan"],
+      "owns": [],
+      "freshSession": true,
+      "chargedToCandidate": true,
+      "outputSchema": {
+        "stableId": "planner",
+        "fields": ["lanes[].nodeId", "lanes[].brief", "lanes[].owns[]"]
+      }
+    },
+    {
+      "id": "worker-a",
+      "role": "worker",
+      "label": "Worker A",
+      "phase": "Implement",
+      "dependsOn": ["planner"],
+      "inputs": ["specification", "plan.lanes[nodeId=worker-a]"],
+      "outputs": ["diff", "evidence"],
+      "owns": ["src/store.mjs"],
+      "freshSession": true,
+      "chargedToCandidate": true,
+      "outputSchema": {
+        "stableId": "worker-a",
+        "fields": ["nodeId", "sourceRevision", "artifactHash", "summary", "files[]"]
+      }
+    },
+    {
+      "id": "worker-b",
+      "role": "worker",
+      "label": "Worker B",
+      "phase": "Implement",
+      "dependsOn": ["planner"],
+      "inputs": ["specification", "plan.lanes[nodeId=worker-b]"],
+      "outputs": ["diff", "evidence"],
+      "owns": ["src/service.mjs"],
+      "freshSession": true,
+      "chargedToCandidate": true,
+      "outputSchema": {
+        "stableId": "worker-b",
+        "fields": ["nodeId", "sourceRevision", "artifactHash", "summary", "files[]"]
+      }
+    },
+    {
+      "id": "worker-c",
+      "role": "worker",
+      "label": "Worker C",
+      "phase": "Implement",
+      "dependsOn": ["planner"],
+      "inputs": ["specification", "plan.lanes[nodeId=worker-c]"],
+      "outputs": ["diff", "evidence"],
+      "owns": ["src/queries.mjs"],
+      "freshSession": true,
+      "chargedToCandidate": true,
+      "outputSchema": {
+        "stableId": "worker-c",
+        "fields": ["nodeId", "sourceRevision", "artifactHash", "summary", "files[]"]
+      }
+    },
+    {
+      "id": "reviewer",
+      "role": "reviewer",
+      "label": "Internal reviewer",
+      "phase": "Review",
+      "dependsOn": ["worker-a", "worker-b", "worker-c"],
+      "inputs": ["specification", "worker-diffs", "reproducible-evidence"],
+      "forbiddenInputs": ["worker-conversation", "worker-transcript", "planner-conversation", "external-evaluator-output"],
+      "outputs": ["verdicts"],
+      "owns": [],
+      "freshSession": true,
+      "chargedToCandidate": true,
+      "outputSchema": {
+        "stableId": "reviewer",
+        "fields": ["verdicts[].targetNodeId", "verdicts[].sourceRevision", "verdicts[].verdict", "verdicts[].reason"]
+      },
+      "note": "Fresh session. Its input is ONLY the specification, the relevant source/diff and reproducible evidence. The worker conversation is never passed. Its usage is charged to the candidate. The external evaluator is NOT part of this workflow."
+    },
+    {
+      "id": "integrator",
+      "role": "integrator",
+      "label": "Integrator",
+      "phase": "Integrate",
+      "dependsOn": ["worker-a", "worker-b", "worker-c", "reviewer"],
+      "inputs": ["worker-outputs", "reviewer-verdicts"],
+      "outputs": ["final-artifact"],
+      "owns": ["SUBMISSION.md"],
+      "freshSession": true,
+      "chargedToCandidate": true,
+      "outputSchema": {
+        "stableId": "integrator",
+        "fields": ["nodeId", "sourceRevision", "artifactHash", "summary"]
+      }
+    }
+  ],
+  "join": {
+    "by": ["nodeId", "sourceRevision"],
+    "byListIndex": false,
+    "expectedWorkers": ["worker-a", "worker-b", "worker-c"],
+    "note": "Worker outputs and reviewer verdicts are joined by stable node ID plus sourceRevision. A verdict whose sourceRevision differs from the worker output it names is STALE and never counts as an approval. A missing or failed worker is accounted as missing/failed; it can never become a successful empty result."
+  },
+  "retry": {
+    "maxAttemptsPerNode": 2,
+    "retryableStatuses": ["failed"],
+    "note": "Retries are bench-controlled and consume the shared max_attempts_total budget. The native runtime's own replay is prefix/position-based and is not relied upon (CAPABILITY.md §5)."
+  },
+  "exclusiveOwnership": {
+    "worker-a": ["src/store.mjs"],
+    "worker-b": ["src/service.mjs"],
+    "worker-c": ["src/queries.mjs"],
+    "integrator": ["SUBMISSION.md"],
+    "note": "Each worker writes only the paths it owns. Overlapping ownership is a definition error and is rejected by the adapter before any node runs."
+  },
+  "finalArtifact": {
+    "producedBy": "integrator",
+    "paths": ["SUBMISSION.md"],
+    "requires": ["joinOk", "allExpectedWorkersAccounted", "noStaleVerdicts"],
+    "note": "The final artifact is produced only when every expected worker is accounted for and no verdict is stale. Otherwise the run reports an incomplete result with the join status surfaced."
+  },
+  "milestones": [
+    "planner_output_recorded",
+    "first_persisted_ack",
+    "worker_outputs_joined",
+    "review_verdicts_recorded",
+    "final_artifact_written"
+  ],
+  "budgets": {
+    "max_concurrency": {"limit": 3, "enforcement": "enforced"},
+    "max_workers": {"limit": 3, "enforcement": "enforced"},
+    "max_attempts_total": {"limit": 12, "enforcement": "enforced"},
+    "max_elapsed_seconds": {"limit": 5400, "enforcement": "enforced"},
+    "max_tokens": {"limit": null, "enforcement": "unavailable"},
+    "max_cost_usd": {"limit": null, "enforcement": "unavailable"}
+  }
+}
