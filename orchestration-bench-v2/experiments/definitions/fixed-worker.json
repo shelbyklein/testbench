@@ -1,0 +1,34 @@
+{
+  "contract": "experiment-definition/1",
+  "id": "fixed-worker",
+  "title": "Same worker, four coordination shapes",
+  "question": "Holding the worker model, settings, tools and environment fixed, does the coordination shape alone change the outcome?",
+  "establishes": "The effect attributable to coordination shape rather than to worker capability. The shared worker is recorded once and copied verbatim into every arm, so a difference in worker setup between arms is a configuration error rather than a finding.",
+  "methods": [
+    "fw-solo",
+    "fw-handoff",
+    "fw-active",
+    "fw-graph"
+  ],
+  "scenarios": [
+    "S1",
+    "S2",
+    "S3"
+  ],
+  "repeats": 1,
+  "seed": 20260920,
+  "phases": [
+    "first",
+    "repaired"
+  ],
+  "environment": {
+    "id": "local-default",
+    "notes": "Local operator machine, offline. Node 22+ and Git only; no provider calls are made by the bench. Record the actual machine, tool versions and network posture before starting."
+  },
+  "controls": {
+    "same_external_grading": true,
+    "repair_feedback": "identical",
+    "fixed_worker": true,
+    "internal_reviewer": false
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "contract": "experiment-definition/1",
+  "id": "internal-review-ablation",
+  "title": "Internal reviewer ablation",
+  "question": "Does adding an internal reviewer to a setup change accepted quality, and does it change it the same way for a solo session as for a graph?",
+  "establishes": "The marginal contribution of an internal reviewer within each coordination shape. The external evaluator is unchanged and stays separate from the internal reviewer.",
+  "methods": [
+    "ir-solo-plain",
+    "ir-solo-reviewed",
+    "ir-graph-plain",
+    "ir-graph-reviewed"
+  ],
+  "scenarios": [
+    "S1",
+    "S2",
+    "S3"
+  ],
+  "repeats": 1,
+  "seed": 20260920,
+  "phases": [
+    "first",
+    "repaired"
+  ],
+  "environment": {
+    "id": "local-default",
+    "notes": "Local operator machine, offline. Node 22+ and Git only; no provider calls are made by the bench. Record the actual machine, tool versions and network posture before starting."
+  },
+  "controls": {
+    "same_external_grading": true,
+    "repair_feedback": "identical",
+    "fixed_worker": true,
+    "internal_reviewer": "ablated: identical reviewer present in two arms, absent in the other two"
+  }
+}

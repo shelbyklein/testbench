@@ -1,0 +1,66 @@
+{
+  "contract": "method/1",
+  "id": "fw-handoff",
+  "version": "1.0.0",
+  "label": "Fixed worker - written plan",
+  "mode": "written-handoff",
+  "configured": false,
+  "roles": [
+    {
+      "role": "planner",
+      "model": {
+        "requested": "RECORD PLANNER MODEL FOR THE FIXED-WORKER COMPARISON",
+        "effective": null,
+        "verified": false
+      },
+      "reasoning": {
+        "requested": "RECORD PLANNER REASONING/EFFORT SETTING IF APPLICABLE",
+        "effective": null,
+        "verified": false
+      }
+    },
+    {
+      "role": "shared worker",
+      "model": {
+        "requested": "RECORD SHARED WORKER MODEL (one value, used by every fixed-worker variant)",
+        "effective": null,
+        "verified": false
+      },
+      "reasoning": {
+        "requested": "RECORD SHARED WORKER REASONING/EFFORT SETTING (one value, used by every fixed-worker variant)",
+        "effective": null,
+        "verified": false
+      }
+    }
+  ],
+  "transport": "RECORD TRANSPORT: written plan artifact handed to a fresh shared-worker session",
+  "launch_template": "methods/templates/written-handoff.md",
+  "internal_review": {
+    "enabled": false,
+    "reviewer_role": null
+  },
+  "adapter": null,
+  "budgets": {
+    "max_workers": {
+      "limit": null,
+      "enforcement": "unenforced"
+    },
+    "max_attempts": {
+      "limit": null,
+      "enforcement": "unenforced"
+    },
+    "max_minutes": {
+      "limit": null,
+      "enforcement": "unenforced"
+    },
+    "max_tokens": {
+      "limit": null,
+      "enforcement": "unavailable"
+    },
+    "max_cost_usd": {
+      "limit": null,
+      "enforcement": "unavailable"
+    }
+  },
+  "notes": "Fixed-worker arm. The worker model, settings, tools and environment are identical across every fw- variant: the shared worker placeholder is recorded once and copied verbatim into each variant, so only the coordination shape differs."
+}

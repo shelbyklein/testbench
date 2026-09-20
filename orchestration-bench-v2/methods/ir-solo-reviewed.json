@@ -1,0 +1,66 @@
+{
+  "contract": "method/1",
+  "id": "ir-solo-reviewed",
+  "version": "1.0.0",
+  "label": "Ablation - solo with internal reviewer",
+  "mode": "solo",
+  "configured": false,
+  "roles": [
+    {
+      "role": "shared worker",
+      "model": {
+        "requested": "RECORD SHARED WORKER MODEL (one value, used by every fixed-worker variant)",
+        "effective": null,
+        "verified": false
+      },
+      "reasoning": {
+        "requested": "RECORD SHARED WORKER REASONING/EFFORT SETTING (one value, used by every fixed-worker variant)",
+        "effective": null,
+        "verified": false
+      }
+    },
+    {
+      "role": "internal reviewer",
+      "model": {
+        "requested": "RECORD INTERNAL REVIEWER MODEL (one value, identical in both reviewed arms)",
+        "effective": null,
+        "verified": false
+      },
+      "reasoning": {
+        "requested": "RECORD REVIEWER REASONING/EFFORT SETTING IF APPLICABLE",
+        "effective": null,
+        "verified": false
+      }
+    }
+  ],
+  "transport": "RECORD TRANSPORT: shared-worker session plus a fresh internal reviewer session",
+  "launch_template": "methods/templates/solo.md",
+  "internal_review": {
+    "enabled": true,
+    "reviewer_role": "internal reviewer"
+  },
+  "adapter": null,
+  "budgets": {
+    "max_workers": {
+      "limit": 2,
+      "enforcement": "unenforced"
+    },
+    "max_attempts": {
+      "limit": null,
+      "enforcement": "unenforced"
+    },
+    "max_minutes": {
+      "limit": null,
+      "enforcement": "unenforced"
+    },
+    "max_tokens": {
+      "limit": null,
+      "enforcement": "unavailable"
+    },
+    "max_cost_usd": {
+      "limit": null,
+      "enforcement": "unavailable"
+    }
+  },
+  "notes": "Internal-reviewer ablation arm. The two reviewed arms use the identical reviewer (one recorded value); the unreviewed arms are otherwise the same setup with the reviewer node removed. The external evaluator is unaffected and stays separate."
+}
