@@ -181,6 +181,25 @@ def _baseline_commit(workspace):
     return head.stdout.strip()
 
 
+def resolve_root(data):
+    """The bench root for an experiment. A prepared experiment may be moved with its bench
+    (e.g. shipped in the ZIP), so a stored root that no longer exists falls back to this bench."""
+    stored = Path(data.get('root') or '')
+    return stored if data.get('root') and stored.is_dir() else common.ROOT
+
+
+def _portable(root, entries):
+    """Store definition paths relative to the bench root so the experiment survives a move."""
+    for entry in entries:
+        path = entry.get('_path')
+        if path and Path(path).is_absolute():
+            try:
+                entry['_path'] = str(Path(path).resolve().relative_to(Path(root).resolve()))
+            except ValueError:
+                pass
+    return entries
+
+
 def policy_hashes(root, methods, scenarios):
     """Hash every file this experiment's comparison depends on."""
     root = Path(root)
@@ -191,7 +210,8 @@ def policy_hashes(root, methods, scenarios):
             if value:
                 files.add(Path(value) if Path(value).is_absolute() else root / value)
     for scenario in scenarios:
-        files.add(Path(scenario['_path']))
+        if scenario.get('_path'):
+            files.add(Path(scenario['_path']) if Path(scenario['_path']).is_absolute() else root / scenario['_path'])
         files.add(root / scenario['participant']['brief'])
         for token in scenario['grader']['argv'][1:]:
             candidate = root / token
@@ -258,6 +278,7 @@ def prepare(root, definition_id, exp_dir, registry=None):
     definition = registry.definition(definition_id)
     methods = [copy.deepcopy(registry.method(m)) for m in definition['methods']]
     scenarios = [copy.deepcopy(registry.scenario(s)) for s in definition['scenarios']]
+    _portable(root, methods); _portable(root, scenarios)
     state = readiness(definition, registry)
 
     plan = schedule_module.build(definition['methods'], definition['scenarios'],
@@ -307,7 +328,7 @@ def start(exp_dir, run_id):
     require_writable(data, writable)
     run = _frozen(data['runs'], run_id)
     common.require(not run.get('startedAt'), 'Run already started')
-    root = Path(data['root'])
+    root = resolve_root(data)
     registry = frozen_registry(root, data)
     state = readiness(data['definition'], registry)
     common.require(state['ready'],

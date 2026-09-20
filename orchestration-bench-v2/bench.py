@@ -72,7 +72,7 @@ def is_v1(data):
 
 
 def root_for(data):
-    return Path(data.get('root') or ROOT)
+    return experiment.resolve_root(data) if data.get('root') else ROOT
 
 
 def ensure_policy(data):
