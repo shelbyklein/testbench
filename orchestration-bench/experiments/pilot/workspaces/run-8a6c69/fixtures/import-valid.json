@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "notes": [
+    {
+      "id": "portable-1",
+      "folderId": "inbox",
+      "title": "A thought from elsewhere",
+      "body": "Portable notes should arrive intact.",
+      "tags": [
+        "Imported"
+      ],
+      "archived": false,
+      "updatedAt": "2026-09-07T12:00:00.000Z"
+    },
+    {
+      "id": "portable-2",
+      "folderId": "inbox",
+      "title": "A second thought",
+      "body": "Portable notes should arrive intact.",
+      "tags": [
+        "Imported"
+      ],
+      "archived": false,
+      "updatedAt": "2026-09-07T12:00:00.000Z"
+    }
+  ]
+}

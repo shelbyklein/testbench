@@ -1,0 +1,62 @@
+[
+  {
+    "id": "solo",
+    "label": "Astra low \u00b7 solo",
+    "mode": "solo",
+    "configured": true,
+    "roles": [
+      {
+        "role": "implementer and self-reviewer",
+        "model": "Astra",
+        "reasoning": "low"
+      }
+    ],
+    "transport": "single fresh agent session",
+    "notes": "No delegated agents. Normal self-review and tests are allowed."
+  },
+  {
+    "id": "handoff",
+    "label": "Astra low \u00b7 written handoff",
+    "mode": "written-handoff",
+    "configured": false,
+    "roles": [
+      {
+        "role": "planner",
+        "model": "Astra",
+        "reasoning": "low"
+      },
+      {
+        "role": "implementer",
+        "model": "RECORD EXACT MODEL",
+        "reasoning": "RECORD IF APPLICABLE"
+      }
+    ],
+    "transport": "GitHub issue or local handoff artifact; record which",
+    "notes": "Planner writes a standalone handoff then stops. Executor completes work without active planner steering. Confirm recipient and whether executor delegation is part of this method."
+  },
+  {
+    "id": "active",
+    "label": "Fable \u2192 Opus \u00b7 active orchestration",
+    "mode": "active-orchestration",
+    "configured": false,
+    "roles": [
+      {
+        "role": "orchestrator",
+        "model": "Fable",
+        "reasoning": "RECORD IF APPLICABLE"
+      },
+      {
+        "role": "implementer",
+        "model": "Opus",
+        "reasoning": "RECORD IF APPLICABLE"
+      },
+      {
+        "role": "Astra involvement",
+        "model": "RECORD ROLE OR REMOVE IF NONE",
+        "reasoning": "RECORD IF APPLICABLE"
+      }
+    ],
+    "transport": "active coordination; record tool/runtime and communication channel",
+    "notes": "Record exact Astra role, model versions, effort settings, delegation limits, and orchestrator interventions before starting. No model substitution is implied."
+  }
+]
